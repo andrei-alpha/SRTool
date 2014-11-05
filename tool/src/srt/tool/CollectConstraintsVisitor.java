@@ -43,6 +43,23 @@ public class CollectConstraintsVisitor extends DefaultVisitor {
 		return super.visit(assignment);
 	}
 	
+	@Override
+	public String toString() {
+		System.out.print("\nvariableNames: ");
+		for (String var : variableNames) {
+			System.out.print(var + ", ");
+		}
+		System.out.print("\ntransitionNodes: ");
+		for (AssignStmt var : transitionNodes) {
+			System.out.print(var + ", ");
+		}
+		System.out.print("\npropertyNodes: ");
+		for (AssertStmt var : propertyNodes) {
+			System.out.print(var + ", ");
+		}
+		return "";
+	}
+	
 }
 
 

@@ -66,6 +66,8 @@ public class SRToolImpl implements SRTool {
 
 		// output query result for debugging
 		if (clArgs.verbose) {
+			// Ignore get value error if assignment is sat 
+			queryResult = queryResult.replaceFirst("(.*model is not available.*)\n", "");
 			System.out.println(queryResult);
 		}
 

@@ -23,40 +23,57 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(bvadd %s %s)";
 				break;
 			case BinaryExpr.BAND:
+				operator = "(bvadd %s %s)";
 				break;
 			case BinaryExpr.BOR:
+				operator = "(bvor %s %s)";
 				break;
 			case BinaryExpr.BXOR:
+				operator = "(bvxor %s %s)";
 				break;
 			case BinaryExpr.DIVIDE:
+				operator = "(bvsdiv %s %s)";
 				break;
 			case BinaryExpr.LSHIFT:
+				operator = "(bvshl %s %s)";
 				break;
 			case BinaryExpr.MOD:
+				operator = "(bvsrem %s %s)";
 				break;
 			case BinaryExpr.MULTIPLY:
+				operator = "(bvmul %s %s)";
 				break;
 			case BinaryExpr.RSHIFT:
+				operator = "(bvashr %s %s)";
 				break;
 			case BinaryExpr.SUBTRACT:
+				operator = "(bvsub %s %s)";
 				break;
 				
 			case BinaryExpr.LAND:
+				//operator = "(bvland %s %s)";
 				break;
 			case BinaryExpr.LOR:
+				//operator = "(bvlor %s %s)";
 				break;
 			
 			case BinaryExpr.GEQ:
+				operator = "(tobv32 (bvsge %s %s))";
 				break;
 			case BinaryExpr.GT:
+				operator = "(tobv32 (bvsgt %s %s))";
 				break;
 			case BinaryExpr.LEQ:
+				operator = "(tobv32 (bvsle %s %s))";
 				break;
 			case BinaryExpr.LT:
+				operator = "(tobv32 (bvslt %s %s))";
 				break;
 			case BinaryExpr.NEQUAL:
+				operator = "(tobv32 (not (= %s %s)))";
 				break;
 			case BinaryExpr.EQUAL:
+				operator = "(tobv32 (= %s %s))";
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid binary operator");
@@ -68,16 +85,17 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(DeclRef declRef) {
-		return null;
+		return declRef.getName();
 	}
 
 	@Override
 	public String visit(IntLiteral intLiteral) {
-		return null;
+		return "(_ bv" + intLiteral.getValue() + " 32)";
 	}
 
 	@Override
 	public String visit(TernaryExpr ternaryExpr) {
+		//TO DO:
 		return null;
 	}
 
@@ -101,7 +119,6 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 		
 		return String.format(operator, visit(unaryExpr.getOperand()));
 	}
-	
 	
 	/* Overridden just to make return type String. 
 	 * @see srt.ast.visitor.DefaultVisitor#visit(srt.ast.Expr)

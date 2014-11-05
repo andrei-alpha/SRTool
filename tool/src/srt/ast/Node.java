@@ -70,5 +70,4 @@ public abstract class Node implements Cloneable {
 	public NodeInfo getNodeInfo() {
 		return nodeInfo;
 	}
-
 }

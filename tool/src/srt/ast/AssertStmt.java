@@ -14,4 +14,9 @@ public class AssertStmt extends Stmt {
 	public Expr getCondition() {
 		return (Expr) children.get(0);
 	}
+	
+	@Override
+	public String toString() {
+		return "AssertStmt: " + this.getCondition();
+	}
 }

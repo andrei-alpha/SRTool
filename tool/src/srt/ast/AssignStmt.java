@@ -22,4 +22,8 @@ public class AssignStmt extends Stmt {
 		return (Expr) children.get(1);
 	}
 	
+	@Override
+	public String toString() {
+		return "AssignStmt: " + this.getLhs() + " " + this.getRhs();
+	}
 }

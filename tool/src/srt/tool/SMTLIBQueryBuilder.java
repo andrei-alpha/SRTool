@@ -1,5 +1,8 @@
 package srt.tool;
 
+import srt.ast.AssertStmt;
+import srt.ast.AssignStmt;
+
 public class SMTLIBQueryBuilder {
 
 	private ExprToSmtlibVisitor exprConverter;
@@ -12,18 +15,50 @@ public class SMTLIBQueryBuilder {
 	}
 
 	public void buildQuery() {
+		System.out.println("constraints: " + this.constraints);
+		System.out.println("exprConverter: " + this.exprConverter);
+		
 		StringBuilder query = new StringBuilder();
-		query.append("(set-logic QF_BV)\n"
-				+ "(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
+		query.append("(set-logic QF_BV)\n");
+		
+		query.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
+		query.append("(define-fun tobool ((p (_ BitVec 32))) (Bool) (not (= p (_ bv0 32))))\n");
 		// TODO: Define more functions above (for convenience), as needed.
-
-		// TODO: Declare variables, add constraints, add properties to check
-		// here.
-
-		query.append("(check-sat)\n");
+		
+		for (String varName : constraints.variableNames) {
+			query.append("(declare-fun " + varName + " () (_ BitVec 32))\n");
+		}
+		for (int i = 0; i < constraints.propertyNodes.size(); ++i) {
+			query.append("(declare-fun " + propName(i) + " () Bool)\n");
+		}
+		for (AssignStmt stmt : constraints.transitionNodes) {
+			query.append("(assert (= " + stmt.getLhs().getName() + " " +
+					exprConverter.visit(stmt.getRhs()) + "))\n");
+		}
+		for (int i = 0; i < constraints.propertyNodes.size(); ++i) { // AssertStmt stmt : constraints.propertyNodes) {
+			AssertStmt stmt = constraints.propertyNodes.get(i);
+			String assertionQuery = "(not (tobool " + exprConverter.visit(stmt.getCondition()) + "))";
+			query.append("(assert (= " + propName(i) + " " + assertionQuery + "))\n");
+		}
+		query.append("(assert (or" + getAllProps() + "))\n");
+		
+		query.append("\n(check-sat)\n");
+		query.append("(get-value (" + getAllProps() + "))\n");
 		queryString = query.toString();
 	}
 
+	private String propName(int index) {
+		return "prop" + String.valueOf(index);
+	}
+	
+	private String getAllProps() {
+		String props = "";
+		for (int i = 0; i < constraints.propertyNodes.size(); ++i) {
+			props += " " + propName(i);
+		}
+		return props;
+	}
+	
 	public String getQuery() {
 		return queryString;
 	}
