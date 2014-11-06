@@ -3,22 +3,21 @@ package srt.tool;
 import java.util.HashMap;
 
 import srt.ast.AssignStmt;
+import srt.ast.BinaryExpr;
 import srt.ast.Decl;
 import srt.ast.DeclRef;
 import srt.ast.Expr;
+import srt.ast.IfStmt;
+import srt.ast.TernaryExpr;
+import srt.ast.UnaryExpr;
 import srt.ast.visitor.impl.DefaultVisitor;
 
 public class SSAVisitor extends DefaultVisitor {
-	private static HashMap<String, Integer> varsIndex = new HashMap<String, Integer>();
+	private HashMap<String, Integer> varsIndex;
 	
 	public SSAVisitor() {
 		super(true);
-	}
-
-	private int getVarIndex(String varName) {
-		if (varsIndex.containsKey((varName)))
-			return varsIndex.get(varName);
-		return 0;
+		varsIndex = new HashMap<String, Integer>();
 	}
 	
 	@Override
@@ -38,7 +37,8 @@ public class SSAVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssignStmt assignment) {
-		if (assignment.getRhs() instanceof srt.ast.BinaryExpr) {
+		String varName = assignment.getLhs().getName();
+		if ( findVarRef(varName, assignment.getRhs()) ) {
 			// Visit LHS of assignment before renaming
 			Expr assignRhs = (Expr) super.visit(assignment.getRhs());
 			
@@ -55,5 +55,29 @@ public class SSAVisitor extends DefaultVisitor {
 			return (Object) assign;
 		}
 		return super.visit(assignment);
+	}
+	
+	private boolean findVarRef(String name, Expr expr) {
+		if (expr instanceof BinaryExpr) {
+			BinaryExpr binaryExpr = (BinaryExpr) expr;
+			return findVarRef(name, binaryExpr.getRhs()) ||
+					findVarRef(name, binaryExpr.getRhs());
+		}
+		if (expr instanceof UnaryExpr) {
+			UnaryExpr unaryExpr = (UnaryExpr) expr;
+			return findVarRef(name, unaryExpr.getOperand());
+		}
+		if (expr instanceof TernaryExpr) {
+			TernaryExpr ternaryExpr = (TernaryExpr) expr;
+			return findVarRef(name, ternaryExpr.getTrueExpr()) ||
+					findVarRef(name, ternaryExpr.getFalseExpr());
+		}
+		return false;
+	}
+	
+	private int getVarIndex(String varName) {
+		if (varsIndex.containsKey((varName)))
+			return varsIndex.get(varName);
+		return 0;
 	}
 }
