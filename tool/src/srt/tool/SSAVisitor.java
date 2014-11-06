@@ -14,10 +14,12 @@ import srt.ast.visitor.impl.DefaultVisitor;
 
 public class SSAVisitor extends DefaultVisitor {
 	private HashMap<String, Integer> varsIndex;
+	private HashMap<String, Boolean> varsSeen;
 	
 	public SSAVisitor() {
 		super(true);
 		varsIndex = new HashMap<String, Integer>();
+		varsSeen = new HashMap<String, Boolean>();
 	}
 	
 	@Override
@@ -38,22 +40,30 @@ public class SSAVisitor extends DefaultVisitor {
 	@Override
 	public Object visit(AssignStmt assignment) {
 		String varName = assignment.getLhs().getName();
-		if ( findVarRef(varName, assignment.getRhs()) ) {
+		if ( findVarRef(varName, assignment.getRhs()) || varsSeen.containsKey(varName)) {
+			// Mark the variable as seen
+			varsSeen.put(varName, true);
+			
 			// Visit LHS of assignment before renaming
 			Expr assignRhs = (Expr) super.visit(assignment.getRhs());
 			
 			// Rename i$x as i$(x + 1) from this point onwards
-			int index = assignment.getLhs().getIndex() + 1;
+			int index = getVarIndex(assignment.getLhs().getName()) + 1;
 			varsIndex.put(assignment.getLhs().getName(), index);
 			
 			// Add a new declaration for i$(x + 1) and visit it
 			DeclRef declRef = new DeclRef(assignment.getLhs().getName(), index);
 			declRef = (DeclRef) super.visit(declRef);
 			
+			// Mark the new variable as seen
+			varsSeen.put(declRef.getName(), true);
+			
 			// Create new assignment to replace current node
 			AssignStmt assign = new AssignStmt(declRef, assignRhs);
 			return (Object) assign;
 		}
+		// Mark the variable as seen
+		varsSeen.put(varName, true);
 		return super.visit(assignment);
 	}
 	
