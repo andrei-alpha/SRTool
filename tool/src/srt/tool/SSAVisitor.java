@@ -7,7 +7,6 @@ import srt.ast.BinaryExpr;
 import srt.ast.Decl;
 import srt.ast.DeclRef;
 import srt.ast.Expr;
-import srt.ast.IfStmt;
 import srt.ast.TernaryExpr;
 import srt.ast.UnaryExpr;
 import srt.ast.visitor.impl.DefaultVisitor;

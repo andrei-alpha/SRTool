@@ -2,6 +2,7 @@ package srt.tool;
 
 import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
+import srt.ast.IntLiteral;
 
 public class SMTLIBQueryBuilder {
 
@@ -17,6 +18,10 @@ public class SMTLIBQueryBuilder {
 	public void buildQuery() {
 		System.out.println("constraints: " + this.constraints);
 		System.out.println("exprConverter: " + this.exprConverter);
+		// If we don't have any assertion add one
+		if (constraints.propertyNodes.isEmpty()) {
+			constraints.propertyNodes.add(new AssertStmt(new IntLiteral(1)));
+		}
 		
 		StringBuilder query = new StringBuilder();
 		query.append("(set-logic QF_BV)\n");
@@ -35,7 +40,7 @@ public class SMTLIBQueryBuilder {
 			query.append("(assert (= " + stmt.getLhs().getName() + " " +
 					exprConverter.visit(stmt.getRhs()) + "))\n");
 		}
-		for (int i = 0; i < constraints.propertyNodes.size(); ++i) { // AssertStmt stmt : constraints.propertyNodes) {
+		for (int i = 0; i < constraints.propertyNodes.size(); ++i) {
 			AssertStmt stmt = constraints.propertyNodes.get(i);
 			String assertionQuery = "(not (tobool " + exprConverter.visit(stmt.getCondition()) + "))";
 			query.append("(assert (= " + propName(i) + " " + assertionQuery + "))\n");
@@ -43,7 +48,7 @@ public class SMTLIBQueryBuilder {
 		query.append("(assert (or" + getAllProps() + "))\n");
 		
 		query.append("\n(check-sat)\n");
-		query.append("(get-value (" + getAllProps() + "))\n");
+		query.append("(get-value (" + getAllProps() + " $Q1 $Q2 $Q3 $Q4 $Q5 i$1 i$2 start))\n");
 		queryString = query.toString();
 	}
 

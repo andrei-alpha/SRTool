@@ -9,10 +9,10 @@ import srt.ast.AssumeStmt;
 import srt.ast.BinaryExpr;
 import srt.ast.BlockStmt;
 import srt.ast.DeclRef;
+import srt.ast.EmptyStmt;
 import srt.ast.Expr;
 import srt.ast.HavocStmt;
 import srt.ast.IfStmt;
-import srt.ast.IntLiteral;
 import srt.ast.Stmt;
 import srt.ast.TernaryExpr;
 import srt.ast.UnaryExpr;
@@ -22,8 +22,6 @@ public class PredicationVisitor extends DefaultVisitor {
 	private Stack<String> conditionVars, assumeVars;
 	private HashMap<String, String> havocVars;
 	private int assumeIndex, condIndex, havocIndex;
-	private DeclRef assumeCond;
-	
 	private static final int ASSUME = 0;
 	private static final int CONDITIONAL = 1;
 	
@@ -33,34 +31,32 @@ public class PredicationVisitor extends DefaultVisitor {
 		assumeVars = new Stack<String>();
 		havocVars = new HashMap<String, String>();
 		condIndex = havocIndex = 0;
-		
-		// Add global boolean for assume statements
-		assumeCond = new DeclRef("$G");
 	}
 	
 	@Override
 	public Object visit(IfStmt ifStmt) {
 		Expr condition = (Expr) super.visit(ifStmt.getCondition());
-		int assumeVarsCount = 0;
 		
 		// Add if condition and visit then block
 		AssignStmt thenQ = newCondition(CONDITIONAL, condition);
-		assumeVarsCount = assumeVars.size();
 		Stmt thenStmt = (Stmt) super.visit(ifStmt.getThenStmt());
-		// Remove condition and all assume variables declared inside
+		// Remove condition declared inside
 		conditionVars.pop();
-		while(assumeVars.size() > assumeVarsCount)
-			assumeVars.pop();
+		
+		// Don't need to visit else block if not present
+		if (ifStmt.getElseStmt() instanceof EmptyStmt) {
+			BlockStmt blockStmt = new BlockStmt(new Stmt[] { thenQ, thenStmt },
+					ifStmt.getNodeInfo());
+			
+			return blockStmt;
+		}
 		
 		// Add the complement of if condition and visit else block
 		UnaryExpr complement = new UnaryExpr(UnaryExpr.LNOT, condition);
 		AssignStmt elseQ = newCondition(CONDITIONAL, complement);
-		assumeVarsCount = assumeVars.size();
 		Stmt elseStmt = (Stmt) super.visit(ifStmt.getElseStmt());
+		// Remove condition declared inside
 		conditionVars.pop();
-		// Remove condition and all assume variables declared inside
-		while(assumeVars.size() > assumeVarsCount)
-			assumeVars.pop();
 		
 		BlockStmt blockStmt = new BlockStmt(new Stmt[] { thenQ, thenStmt, elseQ, elseStmt },
 				ifStmt.getNodeInfo());
