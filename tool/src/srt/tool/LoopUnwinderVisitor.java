@@ -11,6 +11,7 @@ import srt.ast.IfStmt;
 import srt.ast.IntLiteral;
 import srt.ast.Invariant;
 import srt.ast.Stmt;
+import srt.ast.UnaryExpr;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
 
@@ -22,6 +23,7 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 	public LoopUnwinderVisitor(boolean unsound,
 			int defaultUnwindBound) {
 		super(true);
+		
 		this.unsound = unsound;
 		this.defaultUnwindBound = defaultUnwindBound;
 	}
@@ -63,6 +65,11 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		IfStmt ifStmt = new IfStmt(condition, thenStmt, elseStmt);
 		stmts.add(ifStmt);
 		
+		if (level == 0) {
+			Expr notCondition = new UnaryExpr(UnaryExpr.LNOT, whileStmt.getCondition());
+			stmts.add(new AssumeStmt(notCondition));
+		}
+			
 		return new BlockStmt(stmts, whileStmt.getNodeInfo());
 	}
 

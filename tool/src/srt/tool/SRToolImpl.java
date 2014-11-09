@@ -19,8 +19,12 @@ public class SRToolImpl implements SRTool {
 	public SRToolResult go() throws IOException, InterruptedException {
 
 		// TODO: Transform program using Visitors here.
-
-		if (clArgs.mode.equals(CLArgs.BMC)) {
+		if (clArgs.mode.equals(CLArgs.COMP)) {
+			clArgs.unsoundBmc = true;
+			clArgs.unwindDepth = 5;
+		}
+		
+		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {
 			program = (Program) new LoopUnwinderVisitor(clArgs.unsoundBmc,
 					clArgs.unwindDepth).visit(program);
 		} else {

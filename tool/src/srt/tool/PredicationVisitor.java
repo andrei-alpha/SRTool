@@ -40,7 +40,7 @@ public class PredicationVisitor extends DefaultVisitor {
 		// Add if condition and visit then block
 		AssignStmt thenQ = newCondition(CONDITIONAL, condition);
 		Stmt thenStmt = (Stmt) super.visit(ifStmt.getThenStmt());
-		// Remove condition declared inside
+		// Remove all conditions declared inside
 		conditionVars.pop();
 		
 		// Don't need to visit else block if not present
@@ -55,7 +55,7 @@ public class PredicationVisitor extends DefaultVisitor {
 		UnaryExpr complement = new UnaryExpr(UnaryExpr.LNOT, condition);
 		AssignStmt elseQ = newCondition(CONDITIONAL, complement);
 		Stmt elseStmt = (Stmt) super.visit(ifStmt.getElseStmt());
-		// Remove condition declared inside
+		// Remove all conditions declared inside
 		conditionVars.pop();
 		
 		BlockStmt blockStmt = new BlockStmt(new Stmt[] { thenQ, thenStmt, elseQ, elseStmt },
@@ -126,15 +126,15 @@ public class PredicationVisitor extends DefaultVisitor {
 		return name;
 	}
 	
-	private String peekVar(int type) {
+	private Expr peekVar(int type) {
 		if (type == CONDITIONAL) {
 			if (conditionVars.empty())
 				return null;
-			return conditionVars.peek();
+			return new DeclRef(conditionVars.peek());
 		} else if (type == ASSUME) {
 			if (assumeVars.empty())
 				return null;
-			return assumeVars.peek();
+			return new DeclRef(assumeVars.peek());
 		}
 		return null;
 	}
@@ -154,21 +154,37 @@ public class PredicationVisitor extends DefaultVisitor {
 		// Get a new variable name
 		if (type == CONDITIONAL)
 			name = nextConditionVar();
-		else
+		else if (type == ASSUME)
 			name = nextAssumeVar();
 		
 		DeclRef declRef = new DeclRef(name);
 		AssignStmt assign = new AssignStmt(declRef, condition);
 		
-		// If we are inside another conditional
-		if (peekVar(type) != null) {
-			Expr lastCondition = (Expr) new DeclRef(peekVar(type));
-			assign = new AssignStmt(declRef, new BinaryExpr(BinaryExpr.LAND, condition, lastCondition));
+		// Use previous predicate conditional and generates the fewest formulae possible
+		if (type == CONDITIONAL) {
+			Expr lastCondition = peekVar(CONDITIONAL);
+			if (lastCondition != null)
+				assign = new AssignStmt(declRef, new BinaryExpr(BinaryExpr.LAND, condition, lastCondition));
+		} else if (type == ASSUME) {
+			Expr lastAssume = peekVar(ASSUME);
+			Expr lastCondition = peekVar(CONDITIONAL);
+			
+			if (lastCondition != null && lastAssume != null) {
+				Expr notCondition = new UnaryExpr(UnaryExpr.LNOT, lastCondition);
+				Expr predicate = new BinaryExpr(BinaryExpr.LOR, condition, notCondition);
+				assign = new AssignStmt(declRef, new BinaryExpr(BinaryExpr.LAND, predicate, lastAssume));
+			} else if (lastCondition != null) {
+				Expr notCondition = new UnaryExpr(UnaryExpr.LNOT, lastCondition);
+				assign = new AssignStmt(declRef, new BinaryExpr(BinaryExpr.LOR, notCondition, condition));
+			} else if(lastAssume != null) {
+				assign = new AssignStmt(declRef, new BinaryExpr(BinaryExpr.LAND, lastAssume, condition));
+			}
 		}
+		
 		// Add predicate to queue
 		if (type == CONDITIONAL)
 			conditionVars.push(name);
-		else
+		else if (type == ASSUME)
 			assumeVars.push(name);
 		
 		return (AssignStmt) super.visit(assign);

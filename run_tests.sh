@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ONLY_REPORT_FAILURES=0
+ONLY_REPORT_FAILURES=1
 
 
 # TOOL_DIR should be set to the directory of srt_run.sh.
@@ -16,8 +16,9 @@ $TESTER $TOOL tests/loopfree $ONLY_REPORT_FAILURES -mode bmc -unsound
 #$TESTER $TOOL tests/loopfree $ONLY_REPORT_FAILURES -mode verifier
 #$TESTER $TOOL tests/loopfree $ONLY_REPORT_FAILURES -mode houdini
 #$TESTER $TOOL tests/loopfree $ONLY_REPORT_FAILURES -mode invgen
+
 # Uncomment if you implement comp
-#$TESTER $TOOL tests/loopfree $ONLY_REPORT_FAILURES -mode comp
+$TESTER $TOOL tests/loopfree $ONLY_REPORT_FAILURES -mode comp
 
 # BMC sound tests
 $TESTER $TOOL tests/bmc_sound $ONLY_REPORT_FAILURES -mode bmc
@@ -35,5 +36,5 @@ $TESTER $TOOL tests/bmc_unsound $ONLY_REPORT_FAILURES -mode bmc -unsound
 #$TESTER $TOOL tests/invgen $ONLY_REPORT_FAILURES -mode invgen
 
 # Competition mode tests
-#$TESTER $TOOL tests/comp $ONLY_REPORT_FAILURES -mode comp
+$TESTER $TOOL tests/comp $ONLY_REPORT_FAILURES -mode comp
 
