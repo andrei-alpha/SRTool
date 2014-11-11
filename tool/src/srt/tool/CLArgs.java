@@ -16,6 +16,7 @@ public class CLArgs implements Cloneable {
 	public static final String HOUDINI = "houdini";
 	public static final String INVGEN = "invgen";
 	public static final String COMP = "comp";
+	public static final String EXP = "exp";
 	
 	public static class ModeValidator implements IParameterValidator {
 		@Override
@@ -25,7 +26,8 @@ public class CLArgs implements Cloneable {
 					&& !value.equals(VERIFIER)
 					&& !value.equals(HOUDINI)
 					&& !value.equals(INVGEN)
-					&& !value.equals(COMP))
+					&& !value.equals(COMP)
+					&& !value.equals(EXP))
 			{
 				throw new ParameterException("Invalid mode");
 			}

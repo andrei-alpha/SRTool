@@ -17,11 +17,20 @@ public class SRToolImpl implements SRTool {
 	}
 
 	public SRToolResult go() throws IOException, InterruptedException {
-
+		// Experiment to generate executable 
+		if (clArgs.mode.equals(CLArgs.EXP)) {
+			ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
+			String execProgram = execBuilder.getProgram();
+			if (execBuilder.run(execProgram).startsWith("incorrect"))
+				return SRToolResult.INCORRECT;
+			else
+				return SRToolResult.CORRECT;
+		}
+		
 		// TODO: Transform program using Visitors here.
 		if (clArgs.mode.equals(CLArgs.COMP)) {
 			clArgs.unsoundBmc = true;
-			clArgs.unwindDepth = 5;
+			clArgs.unwindDepth = 6;
 		}
 		
 		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {

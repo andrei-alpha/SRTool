@@ -16,10 +16,10 @@ void main(int x) {
     int mid;
     mid = (left + right) / 2;
 
-    if (mid <= x) {
-      right = mid;
-    } else {
+    if (mid < x) {
       left = mid + 1;
+    } else {
+      right = mid;
     }
   }
 

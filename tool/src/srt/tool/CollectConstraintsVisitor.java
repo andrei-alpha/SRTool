@@ -7,11 +7,7 @@ import java.util.Set;
 
 import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
-import srt.ast.AssumeStmt;
-import srt.ast.BinaryExpr;
 import srt.ast.DeclRef;
-import srt.ast.Expr;
-import srt.ast.Node;
 import srt.ast.visitor.impl.DefaultVisitor;
 
 public class CollectConstraintsVisitor extends DefaultVisitor {

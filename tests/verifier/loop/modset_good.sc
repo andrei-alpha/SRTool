@@ -15,11 +15,13 @@ void main(int n, int v) {
     if (v < 50) {
       x = x + 1;
     } else {
-      y = y + 1;
+      y = y + 2;
     }
 
     n = n - 1;
   }
 
   assert(x + y == ni);
+  havoc(x);
+  assume(x);
 }

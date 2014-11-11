@@ -3,9 +3,6 @@ package srt.tool;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.sun.javafx.collections.MappingChange.Map;
-
-import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BlockStmt;
