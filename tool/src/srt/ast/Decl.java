@@ -19,6 +19,10 @@ public class Decl extends Stmt {
 		return name;
 	}
 	
+	public void setName(String newName) {
+		this.name = newName;
+	}
+	
 	public String getType() {
 		return type;
 	}

@@ -1,14 +1,13 @@
 package srt.tool;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 
 import srt.ast.Program;
+import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
 import srt.tool.exception.ProcessTimeoutException;
 
@@ -21,7 +20,7 @@ public class ExecutableBuilder {
 		this.clArgs = clArgs;
 	}
 
-	public String getProgram() throws IOException {
+	public String getProgram() {
 		String code = "";
 		// Get a list of free vars
 		ArrayList<String> freeVars = getFreeVariables();
@@ -34,17 +33,17 @@ public class ExecutableBuilder {
 		}
 		
 		// Generate code for assert and havoc
-		code += "#include <cstdio>\n#include <cstdlib>\n#include <ctime>\n\n";
-		code += "long base = 10;\n\nint newValue() {\n@return rand() % base;\n}\n\n";
-		code += "void assert(bool v) {\n@if (!v) {\n@@printf(@2incorrect@2);\n@@ex";
+		code += "#include <cstdio>\n#include <cstdlib>\n#include <ctime>\n\nlong ";
+		code += "base = 10;\n\nint newValue() {\n@return (rand() - rand()) % base;\n}";
+		code += "\n\nvoid assert(bool v) {\n@if (!v) {\n@@printf(@2incorrect@2);\n@@ex";
 		code += "it(-1);\n@}\n}\n\nvoid havoc(int &x) {\n@x = newValue();\n}\n\n";
 		
 		// Parse the file into a string
-		Scanner scanner = new Scanner(new File(clArgs.files.get(0)));
-		code += scanner.useDelimiter("\\Z").next();
+		String programText = new PrinterVisitor().visit(program);
+		code += programText;
 		
 		// Remove var declaration, assumes, inv, cand and change main to start
-		code = code.replaceFirst("void main\\(.*\\)", "void start(" + params + ")");
+		code = code.replaceFirst("[a-z]*.?main\\(.*\\)", "void start(" + params + ")");
 		code = code.replaceAll(".*inv\\(.*\\).*\n", "");
 		code = code.replaceAll(".*cand\\(.*\\).*\n", "");
 		code = code.replaceAll("assume\\((.*)\\);", "if (\\!($1)) return;");
@@ -58,7 +57,6 @@ public class ExecutableBuilder {
 		
 		// For debugging purposes
 		System.out.println(code);
-		scanner.close();
 		
 		return code;
 	}

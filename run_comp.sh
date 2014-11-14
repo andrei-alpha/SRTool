@@ -9,5 +9,5 @@ TESTER=testerpy/tester.py
 TOOL=$TOOL_DIR/srt_run.sh
 
 # Competition mode tests
-$TESTER $TOOL tests/comp $ONLY_REPORT_FAILURES -mode comp
+$TESTER $TOOL tests/comp $ONLY_REPORT_FAILURES -mode exp
 

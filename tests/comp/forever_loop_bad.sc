@@ -10,15 +10,15 @@ void main()
   y = 4;
 
   while(1) {
-    if (y > 30000) {
-      c = (c + 1) % 4;
+    if (y > 2000000000) {
+      c = (c + 1) % 30;
       x = c;
       y = 4;
     }
 
-    x = x + y;
+    x = x + (y % 7);
     y = y + 4;
 
-    assert(x != 30);
+    assert(x != 17);
   }
 }

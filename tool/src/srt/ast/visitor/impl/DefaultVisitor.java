@@ -66,6 +66,18 @@ public abstract class DefaultVisitor implements Visitor {
 			}
 		}
 		
+		// Compute the modifies set for any node if was not set before
+		if (!(node instanceof DeclRef || node instanceof AssignStmt)) {
+			node.resetVars();
+			for(int i=0; !stopVisitingChildren && i < children.size(); i++) {
+				Node child = children.get(i);
+				if (child != null) {
+					node.addAllModifies(child.getModifies());
+					node.addAllUses(child.getUses());
+				}
+			}
+		}
+		
 		if(modifiedChildren) {
 			return node.withNewChildren(children);
 		}
@@ -80,6 +92,8 @@ public abstract class DefaultVisitor implements Visitor {
 
 	@Override
 	public Object visit(AssignStmt assignment) {
+		assignment.resetVars();
+		assignment.addModifiesVar(assignment.getLhs().getName());
 		return visitChildren(assignment);
 	}
 	
@@ -110,6 +124,8 @@ public abstract class DefaultVisitor implements Visitor {
 
 	@Override
 	public Object visit(DeclRef declRef) {
+		declRef.resetVars();
+		declRef.addUsesVar(declRef.getName());
 		return visitChildren(declRef);
 	}
 	

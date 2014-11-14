@@ -1,6 +1,7 @@
 package srt.tool;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import srt.ast.AssignStmt;
 import srt.ast.BinaryExpr;
@@ -13,12 +14,12 @@ import srt.ast.visitor.impl.DefaultVisitor;
 
 public class SSAVisitor extends DefaultVisitor {
 	private HashMap<String, Integer> varsIndex;
-	private HashMap<String, Boolean> varsSeen;
+	private HashSet<String> varsSeen;
 	
 	public SSAVisitor() {
 		super(true);
 		varsIndex = new HashMap<String, Integer>();
-		varsSeen = new HashMap<String, Boolean>();
+		varsSeen = new HashSet<String>();
 	}
 	
 	@Override
@@ -39,9 +40,9 @@ public class SSAVisitor extends DefaultVisitor {
 	@Override
 	public Object visit(AssignStmt assignment) {
 		String varName = assignment.getLhs().getName();
-		if ( findVarRef(varName, assignment.getRhs()) || varsSeen.containsKey(varName)) {
+		if ( findVarRef(varName, assignment.getRhs()) || varsSeen.contains(varName)) {
 			// Mark the variable as seen
-			varsSeen.put(varName, true);
+			varsSeen.add(varName);
 			
 			// Visit LHS of assignment before renaming
 			Expr assignRhs = (Expr) super.visit(assignment.getRhs());
@@ -55,14 +56,14 @@ public class SSAVisitor extends DefaultVisitor {
 			declRef = (DeclRef) super.visit(declRef);
 			
 			// Mark the new variable as seen
-			varsSeen.put(declRef.getName(), true);
+			varsSeen.add(declRef.getName());
 			
 			// Create new assignment to replace current node
 			AssignStmt assign = new AssignStmt(declRef, assignRhs);
 			return (Object) assign;
 		}
 		// Mark the variable as seen
-		varsSeen.put(varName, true);
+		varsSeen.add(varName);
 		return super.visit(assignment);
 	}
 	

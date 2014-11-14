@@ -24,7 +24,7 @@ public class SRToolImpl implements SRTool {
 			if (execBuilder.run(execProgram).startsWith("incorrect"))
 				return SRToolResult.INCORRECT;
 			else
-				return SRToolResult.CORRECT;
+				return SRToolResult.UNKNOWN;
 		}
 		
 		// TODO: Transform program using Visitors here.

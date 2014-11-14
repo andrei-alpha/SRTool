@@ -1,6 +1,7 @@
 package srt.ast;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -42,7 +43,9 @@ import java.util.List;
 public abstract class Node implements Cloneable {
 	protected ArrayList<Node> children = new ArrayList<Node>();
 	protected NodeInfo nodeInfo;
-
+	private HashSet<String> modifies;
+	private HashSet<String> uses;
+	
 	public Node(NodeInfo nodeInfo) {
 		this.nodeInfo = nodeInfo;
 		if (this.nodeInfo == null) {
@@ -51,6 +54,8 @@ public abstract class Node implements Cloneable {
 			this.nodeInfo = new NodeInfo(this, this.nodeInfo.getLineNumber(),
 					this.nodeInfo.getCharNumber());
 		}
+		modifies = new HashSet<String>();
+		uses = new HashSet<String>();
 	}
 
 	public List<Node> getChildrenCopy() {
@@ -69,5 +74,34 @@ public abstract class Node implements Cloneable {
 
 	public NodeInfo getNodeInfo() {
 		return nodeInfo;
+	}
+	
+	public void resetVars() {
+		modifies.clear();
+		uses.clear();
+	}
+	
+	public void addUsesVar(String varName) {
+		uses.add(varName);
+	}
+	
+	public void addModifiesVar(String varName) {
+		modifies.add(varName);
+	}
+	
+	public void addAllUses(HashSet<String> varsNames) {
+		uses.addAll(varsNames);
+	}
+	
+	public void addAllModifies(HashSet<String> varsNames) {
+		modifies.addAll(varsNames);
+	}
+	
+	public HashSet<String> getModifies() {
+		return modifies;
+	}
+	
+	public HashSet<String> getUses() {
+		return uses;
 	}
 }

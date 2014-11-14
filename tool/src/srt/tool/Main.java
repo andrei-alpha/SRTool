@@ -3,6 +3,8 @@ package srt.tool;
 import srt.ast.Program;
 import srt.ast.visitor.impl.Checker;
 import srt.ast.visitor.impl.MakeBlockVisitor;
+import srt.ast.visitor.impl.PrinterVisitor;
+import srt.ast.visitor.impl.UniqueVisitor;
 import srt.parser.SimpleCParserUtil;
 import srt.tool.SRTool.SRToolResult;
 
@@ -48,6 +50,11 @@ public class Main {
 		if (!success) {
 			throw checker.getCheckerError();
 		}
+		
+		// Make sure each variable name is unique
+		// so we don't have to worry about scopes later on.
+		UniqueVisitor uniqueVisitor = new UniqueVisitor();
+		p = uniqueVisitor.visit(p);
 		
 		SRTool tool = new SRToolImpl(p, clArgs);
 		SRToolResult result = tool.go();

@@ -29,4 +29,8 @@ public class DeclRef extends Expr {
 			return name;
 		return name + "$" + String.valueOf(getIndex());
 	}
+	
+	public void setName(String newName) {
+		this.name = newName;
+	}
 }

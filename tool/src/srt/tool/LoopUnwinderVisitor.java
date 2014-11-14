@@ -1,6 +1,7 @@
 package srt.tool;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import srt.ast.AssertStmt;
 import srt.ast.AssumeStmt;
@@ -30,7 +31,27 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
+		// Go recursively to try to simply 
+		whileStmt = (WhileStmt) super.visit(whileStmt);
+		
 		int unwindBound = defaultUnwindBound;
+		
+		// If we detected an infinite loop
+		HashSet<String> modifies = whileStmt.getBody().getModifies();
+		HashSet<String> uses = whileStmt.getCondition().getUses();
+		
+		boolean infiniteLoop = true;
+		for (String var : uses) {
+			if (modifies.contains(var)) {
+				infiniteLoop = false;
+				break;
+			}
+		}
+		if (infiniteLoop) {
+			AssumeStmt assumeStmt = new AssumeStmt(new IntLiteral(0));
+			return assumeStmt;
+		}
+		
 		if (whileStmt.getBound() != null)
 			unwindBound = whileStmt.getBound().getValue();
 		
