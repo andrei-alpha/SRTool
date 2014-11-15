@@ -45,6 +45,8 @@ public abstract class Node implements Cloneable {
 	protected NodeInfo nodeInfo;
 	private HashSet<String> modifies;
 	private HashSet<String> uses;
+	private int loopCount;
+	private boolean hasAsserts;
 	
 	public Node(NodeInfo nodeInfo) {
 		this.nodeInfo = nodeInfo;
@@ -54,6 +56,9 @@ public abstract class Node implements Cloneable {
 			this.nodeInfo = new NodeInfo(this, this.nodeInfo.getLineNumber(),
 					this.nodeInfo.getCharNumber());
 		}
+		
+		// Some optimizations
+		loopCount = 0;
 		modifies = new HashSet<String>();
 		uses = new HashSet<String>();
 	}
@@ -93,6 +98,14 @@ public abstract class Node implements Cloneable {
 		uses.addAll(varsNames);
 	}
 	
+	public void setLoopCount(int loopCount) {
+		this.loopCount = loopCount;
+	}
+	
+	public int getLoopCount() {
+		return loopCount;
+	}
+	
 	public void addAllModifies(HashSet<String> varsNames) {
 		modifies.addAll(varsNames);
 	}
@@ -103,5 +116,13 @@ public abstract class Node implements Cloneable {
 	
 	public HashSet<String> getUses() {
 		return uses;
+	}
+	
+	public void setAsserts() {
+		hasAsserts = true;
+	}
+	
+	public boolean hasAsserts() {
+		return hasAsserts;
 	}
 }

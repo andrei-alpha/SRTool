@@ -9,17 +9,33 @@ import java.util.HashMap;
 import srt.ast.Program;
 import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
+import srt.tool.SRTool.SRToolResult;
 import srt.tool.exception.ProcessTimeoutException;
 
-public class ExecutableBuilder {
+public class ExecutableBuilder implements Runnable {
 	private Program program;
 	private CLArgs clArgs;
+	private String execProgram;
+	private String runResult;
 	
 	public ExecutableBuilder(Program program, CLArgs clArgs) {
 		this.program = program;
 		this.clArgs = clArgs;
+		this.execProgram = "";
+		this.runResult = "";
 	}
 
+	@Override
+	public void run() {
+		try {
+			run(execProgram);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public String getProgram() {
 		String code = "";
 		// Get a list of free vars
@@ -56,8 +72,11 @@ public class ExecutableBuilder {
 		code = code.replaceAll("@", "  ");
 		
 		// For debugging purposes
-		System.out.println(code);
+		if (clArgs.verbose) {
+			System.out.println(code);
+		}
 		
+		execProgram = code;
 		return code;
 	}
 	
@@ -80,12 +99,13 @@ public class ExecutableBuilder {
 		String runResult = "";
 		process = new ProcessExec("./sr-test");
 		try {
-			runResult = process.execute("", 1 /*clArgs.timeout*/);
+			runResult = process.execute("", 2 /*clArgs.timeout*/);
 		} catch(ProcessTimeoutException e) {
 			return "unknown";
 		}
 
 		System.out.println("Run:" + runResult);
+		this.runResult = runResult;
 		return runResult;
 	}
 
@@ -105,5 +125,9 @@ public class ExecutableBuilder {
 		//}
 		
 		return new ArrayList<String>(freeVars.keySet());
+	}
+	
+	public String getResult() {
+		return runResult;
 	}
 }

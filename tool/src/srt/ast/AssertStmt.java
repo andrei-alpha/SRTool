@@ -1,6 +1,7 @@
 package srt.ast;
 
 public class AssertStmt extends Stmt {
+	private boolean isUnwinding;
 	
 	public AssertStmt(Expr condition) {
 		this(condition, null);
@@ -13,6 +14,14 @@ public class AssertStmt extends Stmt {
 	
 	public Expr getCondition() {
 		return (Expr) children.get(0);
+	}
+	
+	public void makeUnwinding() {
+		isUnwinding = true;
+	}
+	
+	public boolean isUnwinding() {
+		return isUnwinding;
 	}
 	
 	@Override

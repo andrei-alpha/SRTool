@@ -19,6 +19,7 @@ import srt.ast.visitor.impl.DefaultVisitor;
 public class LoopUnwinderVisitor extends DefaultVisitor {
 
 	private boolean unsound;
+	private int outerLoops = 0;
 	private int defaultUnwindBound;
 
 	public LoopUnwinderVisitor(boolean unsound,
@@ -31,10 +32,14 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-		// Go recursively to try to simply 
+		// Go recursively to remove any infinite loops
+		outerLoops += 1;
 		whileStmt = (WhileStmt) super.visit(whileStmt);
+		outerLoops -= 1;
 		
-		int unwindBound = defaultUnwindBound;
+		// Smart unwinding, we know how many outer and inner loops
+		int totalLoops = outerLoops + whileStmt.getLoopCount();
+		int unwindBound = greedyUnwind(totalLoops, outerLoops);
 		
 		// If we detected an infinite loop
 		HashSet<String> modifies = whileStmt.getBody().getModifies();
@@ -47,23 +52,45 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 				break;
 			}
 		}
-		if (infiniteLoop) {
-			AssumeStmt assumeStmt = new AssumeStmt(new IntLiteral(0));
-			return assumeStmt;
+		if (infiniteLoop && !whileStmt.hasAsserts()) {
+			AssumeStmt thenStmt = new AssumeStmt(new IntLiteral(0));
+			EmptyStmt elseStmt = new EmptyStmt();
+			IfStmt ifStmt = new IfStmt(whileStmt.getCondition(), thenStmt, elseStmt);
+			return ifStmt;
 		}
 		
 		if (whileStmt.getBound() != null)
 			unwindBound = whileStmt.getBound().getValue();
 		
-		return super.visit(unwindLoop(whileStmt, unwindBound, 0));
+		outerLoops += 1;
+		Stmt stmt = (Stmt) super.visit(unwindLoop(whileStmt, unwindBound, 0));
+		outerLoops -= 1;
+		return stmt;
 	}
 	
+	private int greedyUnwind(int totalLoops, int outerLoops) {
+		if (totalLoops > 4)
+			return 2;
+		// 3 * 3 * 3 * 3 instructions
+		if (totalLoops == 4)
+			return (outerLoops == 0) ? 3 : 2;
+		// 5 * 4 * 4 instructions
+		if (totalLoops == 3)
+			return (outerLoops == 0) ? 4 : 3;
+		// 9 * 9 instructions
+		if (totalLoops == 2)
+			return 8;
+		// 30 instructions
+		return defaultUnwindBound;
+	}
+
 	private Stmt unwindLoop(WhileStmt whileStmt, int iterations, int level) {
 		if (iterations < 0) {
 			// assume false for last unwind block
 			AssumeStmt assumeStmt = new AssumeStmt(new IntLiteral(0));
 			if (unsound == false) {
 				AssertStmt assertStmt = new AssertStmt(new IntLiteral(0));
+				assertStmt.makeUnwinding();
 				return new BlockStmt(new Stmt[] { assertStmt, assumeStmt },
 						whileStmt.getNodeInfo());
 			}

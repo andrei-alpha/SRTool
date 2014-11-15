@@ -72,8 +72,11 @@ public abstract class DefaultVisitor implements Visitor {
 			for(int i=0; !stopVisitingChildren && i < children.size(); i++) {
 				Node child = children.get(i);
 				if (child != null) {
+					node.setLoopCount(Math.max(node.getLoopCount(), child.getLoopCount()) );
 					node.addAllModifies(child.getModifies());
 					node.addAllUses(child.getUses());
+					if (child.hasAsserts())
+						node.setAsserts();
 				}
 			}
 		}
@@ -87,6 +90,7 @@ public abstract class DefaultVisitor implements Visitor {
 	
 	@Override
 	public Object visit(AssertStmt assertStmt) {
+		assertStmt.setAsserts();
 		return visitChildren(assertStmt);
 	}
 
@@ -198,7 +202,10 @@ public abstract class DefaultVisitor implements Visitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-		return visitChildren(whileStmt);
+		whileStmt.setLoopCount(0);
+		Stmt stmt = (Stmt) visitChildren(whileStmt);
+		stmt.setLoopCount(stmt.getLoopCount() + 1);
+		return stmt;
 	}
 
 }

@@ -1,5 +1,7 @@
 package srt.tool;
 
+import java.util.ArrayList;
+
 import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
 import srt.ast.IntLiteral;
@@ -9,10 +11,12 @@ public class SMTLIBQueryBuilder {
 	private ExprToSmtlibVisitor exprConverter;
 	private CollectConstraintsVisitor constraints;
 	private String queryString = "";
+	private ArrayList<String> unwindingConditions;
 
 	public SMTLIBQueryBuilder(CollectConstraintsVisitor ccv) {
 		this.constraints = ccv;
 		this.exprConverter = new ExprToSmtlibVisitor();
+		this.unwindingConditions = new ArrayList<String>();
 	}
 
 	public void buildQuery() {
@@ -40,13 +44,18 @@ public class SMTLIBQueryBuilder {
 		}
 		for (int i = 0; i < constraints.propertyNodes.size(); ++i) {
 			AssertStmt stmt = constraints.propertyNodes.get(i);
-			String assertionQuery = "(not (tobool " + exprConverter.visit(stmt.getCondition()) + "))";
+			if (stmt.isUnwinding())
+				unwindingConditions.add(propName(i));
+			
+ 			String assertionQuery = "(not (tobool " + exprConverter.visit(stmt.getCondition()) + "))";
 			query.append("(assert (= " + propName(i) + " " + assertionQuery + "))\n");
 		}
 		query.append("(assert (or" + getAllProps() + "))\n");
 		
 		query.append("\n(check-sat)\n");
+		// append all unwinding conditions
 		query.append("(get-value (" + getAllProps() + " ))\n");
+		
 		queryString = query.toString();
 	}
 
@@ -66,4 +75,11 @@ public class SMTLIBQueryBuilder {
 		return queryString;
 	}
 
+	public boolean isUnwindingFailure(String queryResult) {
+		for (String condition : unwindingConditions) {
+			if (queryResult.contains(condition + " true"))
+				return true;
+		}
+		return false;
+	}
 }

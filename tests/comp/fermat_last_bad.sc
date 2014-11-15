@@ -1,3 +1,5 @@
+// Fermant's last theorem a^n + b^n = c^n has solutions for n <= 2
+
 void main(int a, int b, int c, int n) {
   assume(a > 10 && a < 100);
   assume(b > 10 && b < 100);

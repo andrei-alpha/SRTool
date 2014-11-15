@@ -46,7 +46,7 @@ void main(int n) {
   }
 
   if (ni == 0)
-    assert(y == f0);
+    assert(x == f0);
   if (ni == 1)
     assert(y == f1);
   if (ni == 2)

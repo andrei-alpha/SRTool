@@ -15,22 +15,17 @@ public class SRToolImpl implements SRTool {
 		this.program = p;
 		this.clArgs = clArgs;
 	}
-
+	
 	public SRToolResult go() throws IOException, InterruptedException {
 		// Experiment to generate executable 
-		if (clArgs.mode.equals(CLArgs.EXP)) {
-			ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
-			String execProgram = execBuilder.getProgram();
-			if (execBuilder.run(execProgram).startsWith("incorrect"))
-				return SRToolResult.INCORRECT;
-			else
-				return SRToolResult.UNKNOWN;
-		}
+		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
+		String execProgram = execBuilder.getProgram();
+		Thread execThread = new Thread(execBuilder);
+		execThread.run();
 		
 		// TODO: Transform program using Visitors here.
 		if (clArgs.mode.equals(CLArgs.COMP)) {
-			clArgs.unsoundBmc = true;
-			clArgs.unwindDepth = 6;
+			clArgs.unwindDepth = 32;
 		}
 		
 		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {
@@ -84,6 +79,18 @@ public class SRToolImpl implements SRTool {
 			System.out.println(queryResult);
 		}
 
+		// wait for the other thread to finish
+		execThread.join();
+		String runResult = execBuilder.getResult();
+		
+		if (runResult.startsWith("incorrect")) {
+			return SRToolResult.INCORRECT;
+		}
+		
+		if (builder.isUnwindingFailure(queryResult)) {
+			return SRToolResult.UNKNOWN;
+		}
+		
 		if (queryResult.startsWith("unsat")) {
 			return SRToolResult.CORRECT;
 		}

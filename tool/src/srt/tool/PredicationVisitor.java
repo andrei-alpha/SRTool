@@ -72,6 +72,8 @@ public class PredicationVisitor extends DefaultVisitor {
 			Expr rightQ = assertStmt.getCondition();
 			BinaryExpr condition = new BinaryExpr(BinaryExpr.LOR, leftQ, rightQ);
 			AssertStmt newAssertStmt = new AssertStmt(condition);
+			if (assertStmt.isUnwinding())
+				newAssertStmt.makeUnwinding();
 			
 			return super.visit(newAssertStmt);
 		}
@@ -100,7 +102,7 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssumeStmt assumeStmt) {
-		AssignStmt assumeCond = newCondition(ASSUME, assumeStmt.getCondition()); 
+		AssignStmt assumeCond = newCondition(ASSUME, assumeStmt.getCondition());
 		return super.visit(assumeCond);
 	}
 
