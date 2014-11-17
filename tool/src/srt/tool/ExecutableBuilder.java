@@ -9,26 +9,26 @@ import java.util.HashMap;
 import srt.ast.Program;
 import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
-import srt.tool.SRTool.SRToolResult;
 import srt.tool.exception.ProcessTimeoutException;
 
 public class ExecutableBuilder implements Runnable {
 	private Program program;
 	private CLArgs clArgs;
-	private String execProgram;
+	private String runableCode;
 	private String runResult;
 	
 	public ExecutableBuilder(Program program, CLArgs clArgs) {
 		this.program = program;
 		this.clArgs = clArgs;
-		this.execProgram = "";
-		this.runResult = "";
+		this.runableCode = "";
+		this.runResult = "unknown";
 	}
 
 	@Override
 	public void run() {
 		try {
-			run(execProgram);
+			transformProgram();
+			runProgram();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -36,7 +36,7 @@ public class ExecutableBuilder implements Runnable {
 		}
 	}
 	
-	public String getProgram() {
+	public void transformProgram() {
 		String code = "";
 		// Get a list of free vars
 		ArrayList<String> freeVars = getFreeVariables();
@@ -76,14 +76,13 @@ public class ExecutableBuilder implements Runnable {
 			System.out.println(code);
 		}
 		
-		execProgram = code;
-		return code;
+		this.runableCode = code;
 	}
 	
-	public String run(String execProgram) throws IOException, InterruptedException {
+	public String runProgram() throws IOException, InterruptedException {
 		try {
 			PrintWriter out = new PrintWriter("sr-test.cpp");
-			out.println(execProgram);
+			out.println(this.runableCode);
 			out.close();
 		} catch (FileNotFoundException e) {
 			return "unknown";

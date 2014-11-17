@@ -19,7 +19,6 @@ public class SRToolImpl implements SRTool {
 	public SRToolResult go() throws IOException, InterruptedException {
 		// Experiment to generate executable 
 		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
-		String execProgram = execBuilder.getProgram();
 		Thread execThread = new Thread(execBuilder);
 		execThread.run();
 		
@@ -61,6 +60,7 @@ public class SRToolImpl implements SRTool {
 		// Submit query to SMT solver.
 		// You can use other solvers.
 		// E.g. The command for cvc4 is: "cvc4", "--lang", "smt2"
+		//ProcessExec process = new ProcessExec("cvc4", "--lang", "smt2");
 		ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
 		String queryResult = "";
 		try {

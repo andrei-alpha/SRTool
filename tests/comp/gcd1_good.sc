@@ -3,7 +3,7 @@ void main(int x, int y) {
   int g;
 
   if (y > 0 && x % y == 0) {
-    
+
     int a;
     int b;
       
@@ -20,8 +20,8 @@ void main(int x, int y) {
       temp = b;
       b = a % b;
       a = temp;
-    }   
-    
+    }
+      
     assert(a == y);
   }
 }

@@ -29,7 +29,7 @@ public class SMTLIBQueryBuilder {
 		query.append("(set-logic QF_BV)\n");
 		
 		query.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
-		query.append("(define-fun tobool ((p (_ BitVec 32))) (Bool) (not (= p (_ bv0 32))))\n");
+		query.append("(define-fun tobool ((p (_ BitVec 32))) Bool (not (= p (_ bv0 32))))\n");
 		// TODO: Define more functions above (for convenience), as needed.
 		
 		for (String varName : constraints.variableNames) {

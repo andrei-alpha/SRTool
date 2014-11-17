@@ -70,7 +70,7 @@ public class SSAVisitor extends DefaultVisitor {
 	private boolean findVarRef(String name, Expr expr) {
 		if (expr instanceof BinaryExpr) {
 			BinaryExpr binaryExpr = (BinaryExpr) expr;
-			return findVarRef(name, binaryExpr.getRhs()) ||
+			return findVarRef(name, binaryExpr.getLhs()) ||
 					findVarRef(name, binaryExpr.getRhs());
 		}
 		if (expr instanceof UnaryExpr) {
@@ -81,6 +81,9 @@ public class SSAVisitor extends DefaultVisitor {
 			TernaryExpr ternaryExpr = (TernaryExpr) expr;
 			return findVarRef(name, ternaryExpr.getTrueExpr()) ||
 					findVarRef(name, ternaryExpr.getFalseExpr());
+		}
+		if (expr instanceof DeclRef) {
+			return ((DeclRef) expr).getName().equals(name);
 		}
 		return false;
 	}

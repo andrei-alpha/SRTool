@@ -80,7 +80,6 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		// 9 * 9 instructions
 		if (totalLoops == 2)
 			return 8;
-		// 30 instructions
 		return defaultUnwindBound;
 	}
 

@@ -3,7 +3,6 @@ package srt.tool;
 import srt.ast.Program;
 import srt.ast.visitor.impl.Checker;
 import srt.ast.visitor.impl.MakeBlockVisitor;
-import srt.ast.visitor.impl.PrinterVisitor;
 import srt.ast.visitor.impl.UniqueVisitor;
 import srt.parser.SimpleCParserUtil;
 import srt.tool.SRTool.SRToolResult;
