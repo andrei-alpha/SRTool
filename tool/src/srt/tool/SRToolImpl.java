@@ -18,13 +18,15 @@ public class SRToolImpl implements SRTool {
 	
 	public SRToolResult go() throws IOException, InterruptedException {
 		// Experiment to generate executable 
-		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
-		Thread execThread = new Thread(execBuilder);
-		execThread.run();
+		//ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
+		//Thread execThread = new Thread(execBuilder);
+		//execThread.run();
 		
-		// TODO: Transform program using Visitors here.
+		// Transform program using Visitors here.
 		if (clArgs.mode.equals(CLArgs.COMP)) {
 			clArgs.unwindDepth = 32;
+			
+			program = (Program) new LoopOptimizerVisitor().visit(program);
 		}
 		
 		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {
@@ -80,12 +82,12 @@ public class SRToolImpl implements SRTool {
 		}
 
 		// wait for the other thread to finish
-		execThread.join();
-		String runResult = execBuilder.getResult();
+		//execThread.join();
+		//String runResult = execBuilder.getResult();
 		
-		if (runResult.startsWith("incorrect")) {
-			return SRToolResult.INCORRECT;
-		}
+		//if (runResult.startsWith("incorrect")) {
+		//	return SRToolResult.INCORRECT;
+		//}
 		
 		if (builder.isUnwindingFailure(queryResult)) {
 			return SRToolResult.UNKNOWN;

@@ -95,4 +95,25 @@ public class BinaryExpr extends Expr {
 		}
 		throw new IllegalArgumentException("Invalid binary operator");
 	}
+	
+	public static int reverseOperator(final int operator)
+	{
+		switch(operator)
+		{
+			case GEQ:
+				return LT;
+			case GT:
+				return LEQ;
+			case LEQ:
+				return GT;
+			case LT:
+				return GEQ;
+			case NEQUAL:
+				return NEQUAL;
+			case EQUAL:
+				return EQUAL;
+			default:
+		}
+		throw new IllegalArgumentException("Invalid binary operator");
+	}
 }

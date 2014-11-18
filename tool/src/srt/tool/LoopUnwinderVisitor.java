@@ -15,6 +15,7 @@ import srt.ast.Stmt;
 import srt.ast.UnaryExpr;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
+import srt.util.FunctionUtil;
 
 public class LoopUnwinderVisitor extends DefaultVisitor {
 
@@ -46,12 +47,9 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		HashSet<String> uses = whileStmt.getCondition().getUses();
 		
 		boolean infiniteLoop = true;
-		for (String var : uses) {
-			if (modifies.contains(var)) {
-				infiniteLoop = false;
-				break;
-			}
-		}
+		if (!FunctionUtil.setIntersection(uses, modifies))
+			infiniteLoop = false;
+		
 		if (infiniteLoop && !whileStmt.hasAsserts()) {
 			AssumeStmt thenStmt = new AssumeStmt(new IntLiteral(0));
 			EmptyStmt elseStmt = new EmptyStmt();
