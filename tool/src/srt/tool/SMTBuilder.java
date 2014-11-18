@@ -3,6 +3,7 @@ package srt.tool;
 import java.io.IOException;
 
 import srt.ast.Program;
+import srt.ast.visitor.impl.InvariantGenVisitor;
 import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
 import srt.tool.SRTool.SRToolResult;
@@ -34,7 +35,7 @@ public class SMTBuilder extends Builder {
 					clArgs.unwindDepth).visit(program);
 		} else {
 			if (clArgs.mode.equals(CLArgs.INVGEN))
-				;// TO DO: INVGEN
+				program = (Program) new InvariantGenVisitor().visit(program);
 			if (clArgs.mode.equals(CLArgs.INVGEN) || clArgs.mode.equals(CLArgs.HOUDINI)) {
 				program = (Program) new HoudiniTransformerVisitor(program).visit(program);
 				program = (Program) new HoudiniVerifierVisitor(program).visit(program);

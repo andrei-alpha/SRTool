@@ -19,6 +19,14 @@ public class InvariantList extends Node {
 		}
 	}
 	
+	public void addInvariant(Invariant inv) {
+		children.add(inv);
+	}
+	
+	public int getSize() {
+		return children.size();
+	}
+	
 	@SuppressWarnings("unchecked")
 	public List<Invariant> getInvariants() {
 		return (List<Invariant>) children.clone();

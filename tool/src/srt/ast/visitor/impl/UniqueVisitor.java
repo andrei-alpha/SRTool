@@ -97,6 +97,5 @@ public class UniqueVisitor {
 				return variablesRename.get(var);
 			return var;
 		}
-		
 	}
 }

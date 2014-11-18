@@ -33,7 +33,7 @@ public class SRToolImpl implements SRTool {
 			if (!loopOptimizerVisitor.success)
 				break;
 		}
-		
+
 		// Output the program as text after being optimized (for debugging).
 		if (clArgs.verbose) {
 			System.out.println("\nAfter optimization.\n");

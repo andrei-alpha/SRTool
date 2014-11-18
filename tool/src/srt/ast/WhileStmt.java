@@ -33,6 +33,10 @@ public class WhileStmt extends Stmt {
 		return (InvariantList) children.get(2);
 	}
 	
+	public void addToInvariantList(Invariant inv) {
+		this.getInvariantList().addInvariant(inv);
+	}
+	
 	public Stmt getBody() {
 		return (Stmt) children.get(3);
 	}
