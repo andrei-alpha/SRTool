@@ -9,26 +9,20 @@ import java.util.HashMap;
 import srt.ast.Program;
 import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
+import srt.tool.SRTool.SRToolResult;
 import srt.tool.exception.ProcessTimeoutException;
 
-public class ExecutableBuilder implements Runnable {
-	private Program program;
-	private CLArgs clArgs;
-	private String runableCode;
-	private String runResult;
+public class ExecutableBuilder extends Builder {
 	
 	public ExecutableBuilder(Program program, CLArgs clArgs) {
-		this.program = program;
-		this.clArgs = clArgs;
-		this.runableCode = "";
-		this.runResult = "unknown";
+		super(program, clArgs);
 	}
 
 	@Override
 	public void run() {
 		try {
-			transformProgram();
-			runProgram();
+			String code = transformProgram();
+			runResult = runProgram(code);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -36,7 +30,7 @@ public class ExecutableBuilder implements Runnable {
 		}
 	}
 	
-	public void transformProgram() {
+	public String transformProgram() {
 		String code = "";
 		// Get a list of free vars
 		ArrayList<String> freeVars = getFreeVariables();
@@ -76,23 +70,23 @@ public class ExecutableBuilder implements Runnable {
 			System.out.println(code);
 		}
 		
-		this.runableCode = code;
+		return code;
 	}
 	
-	public String runProgram() throws IOException, InterruptedException {
+	public SRToolResult runProgram(String code) throws IOException, InterruptedException {
 		try {
 			PrintWriter out = new PrintWriter("sr-test.cpp");
-			out.println(this.runableCode);
+			out.println(code);
 			out.close();
 		} catch (FileNotFoundException e) {
-			return "unknown";
+			return SRToolResult.UNKNOWN;
 		}
 		
 		ProcessExec process = new ProcessExec("g++", "-o", "sr-test", "sr-test.cpp");
 		try {
 			process.execute("", clArgs.timeout);
 		} catch(ProcessTimeoutException e) {
-			return "unknown";
+			return SRToolResult.UNKNOWN;
 		}
 		
 		String runResult = "";
@@ -100,12 +94,13 @@ public class ExecutableBuilder implements Runnable {
 		try {
 			runResult = process.execute("", 5 /*clArgs.timeout*/);
 		} catch(ProcessTimeoutException e) {
-			return "unknown";
+			return SRToolResult.UNKNOWN;
 		}
 
 		System.out.println("Run:" + runResult);
-		this.runResult = runResult;
-		return runResult;
+		if (runResult.startsWith("incorrect"))
+			return SRToolResult.INCORRECT;
+		return SRToolResult.MAYBE_CORRECT;
 	}
 
 	private ArrayList<String> getFreeVariables() {
@@ -119,14 +114,7 @@ public class ExecutableBuilder implements Runnable {
 		for (String var : ccv.variableNames) {
 			freeVars.put(var, true);
 		}
-		//for (AssignStmt stmt : ccv.transitionNodes) {
-		//	freeVars.remove(stmt.getLhs().getName());
-		//}
 		
 		return new ArrayList<String>(freeVars.keySet());
-	}
-	
-	public String getResult() {
-		return runResult;
 	}
 }

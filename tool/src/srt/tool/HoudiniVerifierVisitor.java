@@ -9,7 +9,6 @@ import srt.ast.Invariant;
 import srt.ast.Program;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
-import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
 import srt.tool.exception.ProcessTimeoutException;
 
@@ -44,10 +43,8 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 			}
 			
 			// Remove failing assertions
-			System.out.println("before invariants: " + blockStmt.getBaseWhileStmt().getInvariantList().getInvariants().size());
 			for (Expr failedInv : failedInvs)
 				removeFailingAssertions(blockStmt.getBaseWhileStmt(), failedInv);
-			System.out.println("rem invariants: " + blockStmt.getBaseWhileStmt().getInvariantList().getInvariants().size());
 			
 			blockStmt = HoudiniTransformerVisitor.transformWhileStmt(blockStmt.getBaseWhileStmt());
 			// Update the blockStmt in the Program
@@ -58,20 +55,10 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 	}
 	
 	public ArrayList<Expr> checkProgram(Program baseProgram) throws IOException, InterruptedException {
-		// Output the program as text before being transformed (for debugging).
-		System.out.println("Before transformation:");
-		String programText = new PrinterVisitor().visit(program);
-		System.out.println(programText);
-		
 		Program program = baseProgram.copy();
 		program = (Program) new LoopAbstractionVisitor().visit(program);
 		program = (Program) new PredicationVisitor().visit(program);
 		program = (Program) new SSAVisitor().visit(program);
-
-		// Output the program as text after being transformed (for debugging).
-		System.out.println("(Houdini Verifier) After transformation:");
-		programText = new PrinterVisitor().visit(program);
-		System.out.println(programText);
 
 		// Collect the constraint expressions and variable names.
 		CollectConstraintsVisitor ccv = new CollectConstraintsVisitor();
@@ -79,7 +66,6 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 
 		SMTLIBQueryBuilder builder = new SMTLIBQueryBuilder(ccv);
 		builder.buildQuery();
-
 		String smtQuery = builder.getQuery();
 
 		// Submit query to SMT solver.
@@ -91,27 +77,20 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 			return null;
 		}
 
-		// output query result for debugging
-		System.out.println(queryResult);
-
 		if (queryResult.startsWith("sat")) {
 			return builder.getFailedHoudini(queryResult);
 		}
-
 		return null;
 	}
 	
 	private void removeFailingAssertions(WhileStmt whileStmt, Expr failedExpr) {
 		ArrayList<Invariant> invs = (ArrayList<Invariant>) (whileStmt.getInvariantList().getInvariants());
-		System.out.println("We know that " + failedExpr + " failed.");
 		
 		int removeCount = 0;
 		for (int i = 0; i < invs.size(); ++i) {
 			Invariant inv = invs.get(i);
-			System.out.println("We check if " + inv.getExpr() + " failed");
 			
 			if (inv.getExpr().equals(failedExpr)) {
-				System.out.println("We remove it.");
 				whileStmt.removeInvariantAt(i - removeCount);
 				removeCount += 1;
 			}

@@ -247,7 +247,7 @@ public class LoopOptimizerVisitor extends DefaultVisitor {
 			if (checkExpr != null) {
 				// If this contain x we can have only ADD or MINUS
 				if (operator != BinaryExpr.ADD && operator != BinaryExpr.SUBTRACT) {
-					System.out.println("We were not expecting operator: " + BinaryExpr.getOperatorString(operator));
+					//System.out.println("We were not expecting operator: " + BinaryExpr.getOperatorString(operator));
 					return false;
 				}
 				
