@@ -23,4 +23,13 @@ public class InvariantList extends Node {
 	public List<Invariant> getInvariants() {
 		return (List<Invariant>) children.clone();
 	}
+
+	public void removeAt(int index) {
+		children.remove(index);		
+	}
+	
+	public void setCandidateAt(int index, boolean value) {
+		Invariant inv = (Invariant) children.get(index);
+		inv.setCandidate(value);
+	}
 }

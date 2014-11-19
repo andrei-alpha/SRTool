@@ -43,6 +43,8 @@ public abstract class DefaultVisitor implements Visitor {
 	
 	protected boolean stopVisitingChildren = false;
 	private boolean doesModify;
+	private int lastChildIndex;
+	private Node lastParent;
 	
 	public DefaultVisitor(boolean doesModify) {
 		super();
@@ -58,6 +60,8 @@ public abstract class DefaultVisitor implements Visitor {
 			Node child = children.get(i);
 			if(child != null)
 			{
+				lastParent = node;
+				lastChildIndex = i;
 				Object res = visit(child);
 				if(doesModify && res != child) {
 					children.set(i, (Node) res);
@@ -96,6 +100,12 @@ public abstract class DefaultVisitor implements Visitor {
 		}
 		
 		return node;
+	}
+	
+	public void changeChildInParent(Node res) {
+		if (lastChildIndex == -1)
+			return;
+		lastParent.changeChildAt(lastChildIndex, res);
 	}
 	
 	@Override

@@ -36,4 +36,16 @@ public class WhileStmt extends Stmt {
 	public Stmt getBody() {
 		return (Stmt) children.get(3);
 	}
+	
+	public void setBody(Stmt body) {
+		children.set(3, body);
+	}
+	
+	public void removeInvariantAt(int index) {
+		this.getInvariantList().removeAt(index);
+	}
+	
+	public void setCandidateAt(int index, boolean value) {
+		this.getInvariantList().setCandidateAt(index, value);
+	}
 }

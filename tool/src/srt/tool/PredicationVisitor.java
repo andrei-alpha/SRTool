@@ -72,9 +72,14 @@ public class PredicationVisitor extends DefaultVisitor {
 			Expr rightQ = assertStmt.getCondition();
 			BinaryExpr condition = new BinaryExpr(BinaryExpr.LOR, leftQ, rightQ);
 			AssertStmt newAssertStmt = new AssertStmt(condition);
+			
 			if (assertStmt.isUnwinding())
 				newAssertStmt.makeUnwinding();
-			
+			if (assertStmt.isHoudini()) {
+				newAssertStmt.makeHoudini();
+				newAssertStmt.setHoudiniInvariant(assertStmt.getHoudiniInvariant());
+			}
+				
 			return super.visit(newAssertStmt);
 		}
 		return super.visit(assertStmt);

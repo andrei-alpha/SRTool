@@ -20,36 +20,42 @@ public class SRToolImpl implements SRTool {
 		// Experiment to generate executable 
 		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
 		Thread execThread = new Thread(execBuilder);
-		execThread.run();
+		//execThread.run();
 		
 		// Transform program using Visitors here.
 		if (clArgs.mode.equals(CLArgs.COMP)) {
 			clArgs.unwindDepth = 32;
-		}
-		
-		// Perform smart loops optimizations and constant folding
-		LoopOptimizerVisitor loopOptimizerVisitor = new LoopOptimizerVisitor();
-		while (true) { 
-			loopOptimizerVisitor.resetSuccess();
-			program = (Program) loopOptimizerVisitor.visit(program);
-			program = (Program) new ConstantFoldingVisitor().visit(program);
-			program = (Program) new DeadCodeEliminationVisitor().visit(program);
 			
-			if (!loopOptimizerVisitor.success)
-				break;
-		}
-		
-		// Output the program as text after being optimized (for debugging).
-		if (clArgs.verbose) {
-			System.out.println("\nAfter optimization.\n");
-			String programText = new PrinterVisitor().visit(program);
-			System.out.println(programText);
+			// Perform smart loops optimizations and constant folding
+			LoopOptimizerVisitor loopOptimizerVisitor = new LoopOptimizerVisitor();
+			while (true) { 
+				loopOptimizerVisitor.resetSuccess();
+				program = (Program) loopOptimizerVisitor.visit(program);
+				program = (Program) new ConstantFoldingVisitor().visit(program);
+				program = (Program) new DeadCodeEliminationVisitor().visit(program);
+				
+				if (!loopOptimizerVisitor.success)
+					break;
+			}
+			
+			// Output the program as text after being optimized (for debugging).
+			if (clArgs.verbose) {
+				System.out.println("\nAfter optimization.\n");
+				String programText = new PrinterVisitor().visit(program);
+				System.out.println(programText);
+			}
 		}
 		
 		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {
 			program = (Program) new LoopUnwinderVisitor(clArgs.unsoundBmc,
 					clArgs.unwindDepth).visit(program);
 		} else {
+			if (clArgs.mode.equals(CLArgs.INVGEN))
+				;// TO DO: INVGEN
+			if (clArgs.mode.equals(CLArgs.INVGEN) || clArgs.mode.equals(CLArgs.HOUDINI)) {
+				program = (Program) new HoudiniTransformerVisitor(program).visit(program);
+				program = (Program) new HoudiniVerifierVisitor(program).visit(program);
+			}
 			program = (Program) new LoopAbstractionVisitor().visit(program);
 		}
 		program = (Program) new PredicationVisitor().visit(program);

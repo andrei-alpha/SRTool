@@ -27,4 +27,11 @@ public class Program extends Node {
     return functionName;
   }
 	
+  public Program copy() {
+	  try {
+		return (Program) super.clone();
+	} catch (CloneNotSupportedException e) {
+		throw new RuntimeException();
+	}
+  }
 }

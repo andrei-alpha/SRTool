@@ -76,6 +76,10 @@ public abstract class Node implements Cloneable {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public void changeChildAt(int index, Node child) {
+		children.set(index, child);
+	}
 
 	public NodeInfo getNodeInfo() {
 		return nodeInfo;

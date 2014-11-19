@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
+import srt.ast.Expr;
 import srt.ast.IntLiteral;
+import srt.ast.Stmt;
+import srt.ast.StmtList;
 
 public class SMTLIBQueryBuilder {
 
@@ -12,11 +15,13 @@ public class SMTLIBQueryBuilder {
 	private CollectConstraintsVisitor constraints;
 	private String queryString = "";
 	private ArrayList<String> unwindingConditions;
-
+	private ArrayList<Integer> houdiniConditions;
+	
 	public SMTLIBQueryBuilder(CollectConstraintsVisitor ccv) {
-		this.constraints = ccv;
-		this.exprConverter = new ExprToSmtlibVisitor();
-		this.unwindingConditions = new ArrayList<String>();
+		constraints = ccv;
+		exprConverter = new ExprToSmtlibVisitor();
+		unwindingConditions = new ArrayList<String>();
+		houdiniConditions = new ArrayList<Integer>();
 	}
 
 	public void buildQuery() {
@@ -46,6 +51,9 @@ public class SMTLIBQueryBuilder {
 			AssertStmt stmt = constraints.propertyNodes.get(i);
 			if (stmt.isUnwinding())
 				unwindingConditions.add(propName(i));
+			if (stmt.isHoudini()) {
+				houdiniConditions.add(i);
+			}
 			
  			String assertionQuery = "(not (tobool " + exprConverter.visit(stmt.getCondition()) + "))";
 			query.append("(assert (= " + propName(i) + " " + assertionQuery + "))\n");
@@ -81,5 +89,18 @@ public class SMTLIBQueryBuilder {
 				return true;
 		}
 		return false;
+	}
+	
+	public ArrayList<Expr> getFailedHoudini(String queryResult) {
+		ArrayList<Expr> stmts = new ArrayList<Expr>();
+		
+		for (Integer conditionIndex : houdiniConditions) {
+			String condition = propName(conditionIndex);
+			if (queryResult.contains(condition + " true")) {
+				stmts.add(constraints.propertyNodes.get(conditionIndex).getHoudiniInvariant());
+			}
+		}
+		
+		return stmts;
 	}
 }

@@ -49,7 +49,6 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 	private void getModifiesSet(HashMap<String, Boolean> vars, Node node) {
 		if (node instanceof AssignStmt) {
 			String varName = ((AssignStmt) node).getLhs().getName();
-			System.out.println("add " + varName);
 			vars.put(varName, true);	
 		}
 		else if (node instanceof WhileStmt) {

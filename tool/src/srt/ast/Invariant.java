@@ -20,6 +20,11 @@ public class Invariant extends Node {
 		return candidate;
 	}
 	
+	public void setCandidate(boolean candidate) 
+	{
+		this.candidate = candidate;
+	}
+	
 	public Expr getExpr()
 	{
 		return (Expr) children.get(0); 
