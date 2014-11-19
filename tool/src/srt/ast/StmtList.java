@@ -2,7 +2,7 @@ package srt.ast;
 
 import java.util.List;
 
-public class StmtList extends Node {
+public class StmtList extends Stmt {
 	
 	public StmtList(Stmt[] statements) {
 		this(statements, null);

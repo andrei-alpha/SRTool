@@ -33,4 +33,8 @@ public class DeclRef extends Expr {
 	public void setName(String newName) {
 		this.name = newName;
 	}
+	
+	public String toString() {
+		return getName();
+	}
 }

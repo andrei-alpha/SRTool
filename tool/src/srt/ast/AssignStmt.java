@@ -24,6 +24,6 @@ public class AssignStmt extends Stmt {
 	
 	@Override
 	public String toString() {
-		return "AssignStmt: " + this.getLhs() + " " + this.getRhs();
+		return "AssignStmt: " + this.getLhs() + "=" + this.getRhs();
 	}
 }

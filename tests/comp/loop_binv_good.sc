@@ -1,5 +1,8 @@
 void main()
 {
+  int x;
+  int a;
+
   int i;
   int j;
   int z;
@@ -9,6 +12,7 @@ void main()
     i = i + 1;
     j=0;
     z=0;
+
     while(j < 3)
     inv(z == i * j)
     {
@@ -17,5 +21,4 @@ void main()
     }
     assert(z==i*3);
   }
-  
 }

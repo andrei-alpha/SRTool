@@ -135,6 +135,10 @@ public class PrinterVisitor extends DefaultVisitor {
 		StringBuilder sb = new StringBuilder(program.getFunctionName() + "(");
 		boolean afterOne = false;
 		for(Decl decl : program.getDeclList().getDecls()) {
+			// Maybe it was removed
+			if (decl == null)
+				continue;
+			
 			if(afterOne) {
 				sb.append(", ");
 			}

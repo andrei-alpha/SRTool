@@ -66,18 +66,28 @@ public abstract class DefaultVisitor implements Visitor {
 			}
 		}
 		
-		// Compute the modifies set for any node if was not set before
-		if (!(node instanceof DeclRef || node instanceof AssignStmt)) {
-			node.resetVars();
-			for(int i=0; !stopVisitingChildren && i < children.size(); i++) {
-				Node child = children.get(i);
-				if (child != null) {
-					node.setLoopCount(Math.max(node.getLoopCount(), child.getLoopCount()) );
-					node.addAllModifies(child.getModifies());
+		// Compute the modifies set for any node, declref and assign are special cases
+		node.resetVars();
+		if (node instanceof DeclRef) {
+			node.addUsesVar(((DeclRef) node).getName());
+		}
+		if (node instanceof AssignStmt) {
+			node.addModifiesVar(((AssignStmt) node).getLhs().getName());
+		}
+		if (node instanceof AssertStmt) {
+			node.setAsserts();
+		}
+		
+		for(int i=0; !stopVisitingChildren && i < children.size(); i++) {
+			Node child = children.get(i);
+			if (child != null) {
+				node.setLoopCount(Math.max(node.getLoopCount(), child.getLoopCount()) );
+				node.addAllModifies(child.getModifies());
+				// Special case for assign, don't add to use set LHS
+				if (!(node instanceof AssignStmt && i == 0))
 					node.addAllUses(child.getUses());
-					if (child.hasAsserts())
-						node.setAsserts();
-				}
+				if (child.hasAsserts())
+					node.setAsserts();
 			}
 		}
 		
@@ -90,14 +100,11 @@ public abstract class DefaultVisitor implements Visitor {
 	
 	@Override
 	public Object visit(AssertStmt assertStmt) {
-		assertStmt.setAsserts();
 		return visitChildren(assertStmt);
 	}
 
 	@Override
 	public Object visit(AssignStmt assignment) {
-		assignment.resetVars();
-		assignment.addModifiesVar(assignment.getLhs().getName());
 		return visitChildren(assignment);
 	}
 	
@@ -128,8 +135,6 @@ public abstract class DefaultVisitor implements Visitor {
 
 	@Override
 	public Object visit(DeclRef declRef) {
-		declRef.resetVars();
-		declRef.addUsesVar(declRef.getName());
 		return visitChildren(declRef);
 	}
 	
@@ -177,8 +182,6 @@ public abstract class DefaultVisitor implements Visitor {
 	public Object visit(Program program) {
 		return visitChildren(program);
 	}
-	
-	
 
 	@Override
 	public Object visit(Stmt stmt) {
@@ -202,7 +205,7 @@ public abstract class DefaultVisitor implements Visitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-		whileStmt.setLoopCount(0);
+		whileStmt.resetVars();
 		Stmt stmt = (Stmt) visitChildren(whileStmt);
 		stmt.setLoopCount(stmt.getLoopCount() + 1);
 		return stmt;

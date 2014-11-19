@@ -34,16 +34,40 @@ public class UnaryExpr extends Expr {
 	{
 		switch(operator)
 		{
-		case UMINUS:
-			return "-";
-		case UPLUS:
-			return "+";
-		case LNOT:
-			return "!";
-		case BNOT:
-			return "~";
-		default:
+			case UMINUS:
+				return "-";
+			case UPLUS:
+				return "+";
+			case LNOT:
+				return "!";
+			case BNOT:
+				return "~";
+			default:
 		}
 		throw new IllegalArgumentException("Invalid binary operator");
+	}
+	
+	public int calculate() {
+		if (!(getOperand() instanceof IntLiteral))
+			throw new IllegalArgumentException("Must be used only on int values");
+		int val = ((IntLiteral) getOperand()).getValue();
+		
+		switch(operator)
+		{
+			case UMINUS:
+				return -val;
+			case UPLUS:
+				return +val;
+			case LNOT:
+				return (val == 0 ? 1 : 0);
+			case BNOT:
+				return ~val;
+			default:
+		}
+		throw new IllegalArgumentException("Invalid binary operator");
+	}
+	
+	public String toString() {
+		return getOperatorString(operator) + this.getOperand();
 	}
 }

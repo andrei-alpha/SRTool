@@ -96,6 +96,21 @@ public class BinaryExpr extends Expr {
 		throw new IllegalArgumentException("Invalid binary operator");
 	}
 	
+	public static boolean isReversableOperator(final int operator) {
+		switch(operator)
+		{
+			case GEQ:
+			case GT:
+			case LEQ:
+			case LT:
+			case NEQUAL:
+			case EQUAL:
+				return true;
+			default:
+				return false;
+		}
+	}
+	
 	public static int reverseOperator(final int operator)
 	{
 		switch(operator)
@@ -112,6 +127,63 @@ public class BinaryExpr extends Expr {
 				return NEQUAL;
 			case EQUAL:
 				return EQUAL;
+			default:
+		}
+		throw new IllegalArgumentException("Invalid binary operator");
+	}
+	
+	public String toString()
+	{
+		return "(" + this.getLhs() + " " + getOperatorString(operator) + " " + this.getRhs() + ")";
+	}
+	
+	public int calculate() 
+	{
+		if (!(getLhs() instanceof IntLiteral) || !(getRhs() instanceof IntLiteral))
+			throw new IllegalArgumentException("This needs to be called for ints only.");
+		int lhs = ((IntLiteral) getLhs()).getValue();
+		int rhs = ((IntLiteral) getRhs()).getValue();
+		boolean blhs = (lhs != 0 ? true : false);
+		boolean brhs = (rhs != 0 ? true : false);
+		
+		switch(operator)
+		{
+			case ADD:
+				return lhs + rhs;
+			case BAND:
+				return lhs & rhs;
+			case BOR:
+				return lhs | rhs;
+			case BXOR:
+				return lhs ^ rhs;
+			case DIVIDE:
+				return lhs / rhs;
+			case GEQ:
+				return (lhs >= rhs ? 1 : 0);
+			case GT:
+				return (lhs > rhs ? 1 : 0);
+			case LAND:
+				return (blhs && brhs ? 1 : 0);
+			case LEQ:
+				return (lhs <= rhs ? 1 : 0);
+			case LOR:
+				return (blhs || brhs ? 1 : 0);
+			case LSHIFT:
+				return lhs << rhs;
+			case LT:
+				return (lhs < rhs ? 1 : 0);
+			case MOD:
+				return lhs % rhs;
+			case MULTIPLY:
+				return lhs * rhs;
+			case NEQUAL:
+				return (blhs != brhs ? 1 : 0);
+			case EQUAL:
+				return (blhs == brhs ? 1 : 0);
+			case RSHIFT:
+				return lhs >> rhs;
+			case SUBTRACT:
+				return lhs - rhs;
 			default:
 		}
 		throw new IllegalArgumentException("Invalid binary operator");

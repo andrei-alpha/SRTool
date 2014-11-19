@@ -84,6 +84,8 @@ public abstract class Node implements Cloneable {
 	public void resetVars() {
 		modifies.clear();
 		uses.clear();
+		loopCount = 0;
+		hasAsserts = false;
 	}
 	
 	public void addUsesVar(String varName) {

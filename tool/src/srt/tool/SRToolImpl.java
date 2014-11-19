@@ -18,15 +18,32 @@ public class SRToolImpl implements SRTool {
 	
 	public SRToolResult go() throws IOException, InterruptedException {
 		// Experiment to generate executable 
-		//ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
-		//Thread execThread = new Thread(execBuilder);
-		//execThread.run();
+		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
+		Thread execThread = new Thread(execBuilder);
+		execThread.run();
 		
 		// Transform program using Visitors here.
 		if (clArgs.mode.equals(CLArgs.COMP)) {
 			clArgs.unwindDepth = 32;
+		}
+		
+		// Perform smart loops optimizations and constant folding
+		LoopOptimizerVisitor loopOptimizerVisitor = new LoopOptimizerVisitor();
+		while (true) { 
+			loopOptimizerVisitor.resetSuccess();
+			program = (Program) loopOptimizerVisitor.visit(program);
+			program = (Program) new ConstantFoldingVisitor().visit(program);
+			program = (Program) new DeadCodeEliminationVisitor().visit(program);
 			
-			program = (Program) new LoopOptimizerVisitor().visit(program);
+			if (!loopOptimizerVisitor.success)
+				break;
+		}
+		
+		// Output the program as text after being optimized (for debugging).
+		if (clArgs.verbose) {
+			System.out.println("\nAfter optimization.\n");
+			String programText = new PrinterVisitor().visit(program);
+			System.out.println(programText);
 		}
 		
 		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {
@@ -37,9 +54,10 @@ public class SRToolImpl implements SRTool {
 		}
 		program = (Program) new PredicationVisitor().visit(program);
 		program = (Program) new SSAVisitor().visit(program);
-
+		
 		// Output the program as text after being transformed (for debugging).
 		if (clArgs.verbose) {
+			System.out.println("\nAfter transformations.\n");
 			String programText = new PrinterVisitor().visit(program);
 			System.out.println(programText);
 		}
@@ -61,7 +79,6 @@ public class SRToolImpl implements SRTool {
 
 		// Submit query to SMT solver.
 		// You can use other solvers.
-		// E.g. The command for cvc4 is: "cvc4", "--lang", "smt2"
 		//ProcessExec process = new ProcessExec("cvc4", "--lang", "smt2");
 		ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
 		String queryResult = "";
@@ -81,25 +98,22 @@ public class SRToolImpl implements SRTool {
 			System.out.println(queryResult);
 		}
 
-		// wait for the other thread to finish
-		//execThread.join();
-		//String runResult = execBuilder.getResult();
-		
-		//if (runResult.startsWith("incorrect")) {
-		//	return SRToolResult.INCORRECT;
-		//}
-		
-		if (builder.isUnwindingFailure(queryResult)) {
-			return SRToolResult.UNKNOWN;
-		}
-		
 		if (queryResult.startsWith("unsat")) {
 			return SRToolResult.CORRECT;
 		}
-
-		if (queryResult.startsWith("sat")) {
+		
+		if (queryResult.startsWith("sat") && !builder.isUnwindingFailure(queryResult)) {
 			return SRToolResult.INCORRECT;
 		}
+		
+		// wait for the other thread to finish
+		execThread.join();
+		String runResult = execBuilder.getResult();
+		
+		if (runResult.startsWith("incorrect")) {
+			return SRToolResult.INCORRECT;
+		}
+		
 		// query result started with something other than "sat" or "unsat"
 		return SRToolResult.UNKNOWN;
 	}

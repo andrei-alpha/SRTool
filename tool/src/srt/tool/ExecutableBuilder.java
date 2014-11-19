@@ -98,7 +98,7 @@ public class ExecutableBuilder implements Runnable {
 		String runResult = "";
 		process = new ProcessExec("./sr-test");
 		try {
-			runResult = process.execute("", 2 /*clArgs.timeout*/);
+			runResult = process.execute("", 5 /*clArgs.timeout*/);
 		} catch(ProcessTimeoutException e) {
 			return "unknown";
 		}

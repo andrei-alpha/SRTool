@@ -14,7 +14,7 @@ void main(int x, int y) {
     a = 200;
     b = 0;
 
-    while(j <= 100) {
+    while(j < 100) {
       a = a - 1;
       b = b + 1;
 
@@ -26,6 +26,6 @@ void main(int x, int y) {
 
     i = i + 1;
   }
-
+  
   assert(x == y);
 }

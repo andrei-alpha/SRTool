@@ -16,4 +16,8 @@ public class IntLiteral extends Expr {
 		return value;
 	}
 	
+	public String toString() {
+		return value + "";
+	}
+	
 }

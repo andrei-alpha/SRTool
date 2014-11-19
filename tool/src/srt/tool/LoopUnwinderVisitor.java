@@ -41,14 +41,16 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		// Smart unwinding, we know how many outer and inner loops
 		int totalLoops = outerLoops + whileStmt.getLoopCount();
 		int unwindBound = greedyUnwind(totalLoops, outerLoops);
-		
+
 		// If we detected an infinite loop
 		HashSet<String> modifies = whileStmt.getBody().getModifies();
 		HashSet<String> uses = whileStmt.getCondition().getUses();
 		
 		boolean infiniteLoop = true;
-		if (!FunctionUtil.setIntersection(uses, modifies))
+		if (FunctionUtil.setIntersection(uses, modifies))
 			infiniteLoop = false;
+		
+		System.out.println("try to eliminate loop:" + whileStmt.hasAsserts());
 		
 		if (infiniteLoop && !whileStmt.hasAsserts()) {
 			AssumeStmt thenStmt = new AssumeStmt(new IntLiteral(0));
