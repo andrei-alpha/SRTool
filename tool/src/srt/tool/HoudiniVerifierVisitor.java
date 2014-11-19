@@ -9,14 +9,17 @@ import srt.ast.Invariant;
 import srt.ast.Program;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
+import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
 import srt.tool.exception.ProcessTimeoutException;
 
 public class HoudiniVerifierVisitor extends DefaultVisitor {
 	private Program program;
+	private CLArgs clArgs;
 	
-	public HoudiniVerifierVisitor(Program program) {
+	public HoudiniVerifierVisitor(Program program, CLArgs clArgs) {
 		super(true);
+		this.clArgs = clArgs;
 		this.program = program;
 	}
 
@@ -27,7 +30,7 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		if (blockStmt.getBaseWhileStmt() == null)
 			return super.visit(blockStmt);
 			
-		for (int i = 0; i < 3; ++i) {
+		while(true) {
 			ArrayList<Expr> failedInvs;
 			try {
 				failedInvs = checkProgram(program);
@@ -55,11 +58,23 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 	}
 	
 	public ArrayList<Expr> checkProgram(Program baseProgram) throws IOException, InterruptedException {
+		/*if (clArgs.verbose) {
+			PrinterVisitor printerVisitor = new PrinterVisitor();
+			String code = printerVisitor.visit(baseProgram);
+			System.out.println("Before transformation:\n" + code);
+		}*/
+		
 		Program program = baseProgram.copy();
 		program = (Program) new LoopAbstractionVisitor().visit(program);
 		program = (Program) new PredicationVisitor().visit(program);
 		program = (Program) new SSAVisitor().visit(program);
 
+		/*if (clArgs.verbose) {
+			PrinterVisitor printerVisitor = new PrinterVisitor();
+			String code = printerVisitor.visit(program);
+			System.out.println("After transformation:\n" + code);
+		}*/
+		
 		// Collect the constraint expressions and variable names.
 		CollectConstraintsVisitor ccv = new CollectConstraintsVisitor();
 		ccv.visit(program);
@@ -85,6 +100,9 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 	
 	private void removeFailingAssertions(WhileStmt whileStmt, Expr failedExpr) {
 		ArrayList<Invariant> invs = (ArrayList<Invariant>) (whileStmt.getInvariantList().getInvariants());
+		if (clArgs.verbose) {
+			System.out.println("Failed invariant: " + failedExpr);
+		}
 		
 		int removeCount = 0;
 		for (int i = 0; i < invs.size(); ++i) {
@@ -99,7 +117,6 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 	
 	private void makeCandidatesTrue(WhileStmt whileStmt) {
 		ArrayList<Invariant> invs = (ArrayList<Invariant>) (whileStmt.getInvariantList().getInvariants());
-		
 		for (int i = 0; i < invs.size(); ++i) {
 			whileStmt.setCandidateAt(i, false);
 		}

@@ -90,6 +90,8 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(IntLiteral intLiteral) {
+		if (intLiteral.getValue() < 0)
+			return "(bvneg (_ bv" + (-1 * intLiteral.getValue()) + " 32))";
 		return "(_ bv" + intLiteral.getValue() + " 32)";
 	}
 

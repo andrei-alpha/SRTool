@@ -3,6 +3,7 @@ package srt.tool;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BlockStmt;
@@ -40,8 +41,16 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		
 		// Add all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
-			stmts.add(new AssumeStmt(inv.getExpr()));
+			System.out.println("Final Invariant: " + inv.getExpr());
+			if (!inv.isCandidate())
+				stmts.add(new AssumeStmt(inv.getExpr()));
 		}
+		
+		// Add all loop assertions
+		CollectConstraintsVisitor collectConstraintsVisitor = new CollectConstraintsVisitor();
+		collectConstraintsVisitor.visit(whileStmt.getBody());
+		for (AssertStmt assertStmt : collectConstraintsVisitor.propertyNodes)
+			stmts.add(assertStmt);
 		
 		return super.visit(new BlockStmt(stmts, whileStmt.getNodeInfo()));
 	}

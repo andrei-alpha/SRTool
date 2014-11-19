@@ -38,7 +38,7 @@ public class SMTBuilder extends Builder {
 				program = (Program) new InvariantGenVisitor().visit(program);
 			if (clArgs.mode.equals(CLArgs.INVGEN) || clArgs.mode.equals(CLArgs.HOUDINI)) {
 				program = (Program) new HoudiniTransformerVisitor(program).visit(program);
-				program = (Program) new HoudiniVerifierVisitor(program).visit(program);
+				program = (Program) new HoudiniVerifierVisitor(program, clArgs).visit(program);
 			}
 			program = (Program) new LoopAbstractionVisitor().visit(program);
 		}
