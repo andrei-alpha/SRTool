@@ -117,14 +117,28 @@ public class PredicationVisitor extends DefaultVisitor {
 		
 		// Create a fresh new variable and replace all occurrences of x with it
 		DeclRef declRef = havocStmt.getVariable();
-		havocVariable(declRef.getName());
+		String newVar = havocVariable(declRef.getName());
+		DeclRef newDeclRef = new DeclRef(newVar);
+		
+		// Assign the new variable to x if the predicate is true
+		Expr topPredicate = getTopPredicate();
+		if (topPredicate != null) {
+			Expr trueExpr = newDeclRef;
+			Expr falseExpr = declRef;
+			TernaryExpr ternExpr = new TernaryExpr(topPredicate, trueExpr, falseExpr);
+			AssignStmt newAssign = new AssignStmt(newDeclRef, ternExpr);
+			
+			return newAssign;
+		}
 		
 		return havocStmt;
 	}
 	
-	private void havocVariable(String name) {
+	private String havocVariable(String name) {
 		havocIndex += 1;
-		havocVars.put(name, "$h" + String.valueOf(havocIndex));
+		String newName =  "$h" + String.valueOf(havocIndex);
+		havocVars.put(name, newName);
+		return newName;
 	}
 	
 	private String getName(String name) {

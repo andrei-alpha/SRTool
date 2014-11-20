@@ -37,7 +37,10 @@ public class ExecutableBuilder extends Builder {
 		String params = "", args = "";
 		boolean isFirst = true;
 		for (String var : freeVars) {
-			params += (isFirst ? "" : ", ") + "int " + var;
+			if (var.contains("$"))
+				params += (isFirst ? "" : ", ") + "int " + var.replaceAll("\\$", "spc_var_");
+			else
+				params += (isFirst ? "" : ", ") + "int " + var;
 			args += (isFirst ? "" : ", ") + "newValue()";
 			isFirst = false;
 		}
@@ -53,6 +56,7 @@ public class ExecutableBuilder extends Builder {
 		code += programText;
 		
 		// Remove var declaration, assumes, inv, cand and change main to start
+		code = code.replaceAll("\\$", "spc_var_");
 		code = code.replaceFirst("[a-z]*.?main\\(.*\\)", "void start(" + params + ")");
 		code = code.replaceAll(".*inv\\(.*\\).*\n", "");
 		code = code.replaceAll(".*cand\\(.*\\).*\n", "");
