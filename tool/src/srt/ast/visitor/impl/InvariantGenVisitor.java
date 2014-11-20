@@ -44,14 +44,8 @@ public class InvariantGenVisitor extends DefaultVisitor {
 		}
 		
 		// Add candidate invariant for every two pairs of variables
-		ArrayList<Integer> properties = new ArrayList<Integer>();
-		properties.add(BinaryExpr.GEQ);
-		properties.add(BinaryExpr.NEQUAL);
-		properties.add(BinaryExpr.GT);
-		properties.add(BinaryExpr.EQUAL);
-		properties.add(BinaryExpr.LEQ);
-		properties.add(BinaryExpr.LT);
-		
+		ArrayList<Integer> properties = getComparingOperators();
+
 		for (String var1 : modifies) {
 			for (int operator : properties) {
 				for (String var2 : uses) {
@@ -65,6 +59,7 @@ public class InvariantGenVisitor extends DefaultVisitor {
 			}
 		}
 
+		// Add candidate invariant for comparing modified variables with assertion constants
 		for (String var1 : modifies) {
 			for (int operator : properties) {
 				for (int value : values) {
@@ -89,6 +84,20 @@ public class InvariantGenVisitor extends DefaultVisitor {
 				}
 			}
 		}
+
+		// Add candidate invariants to check even / odd of modifies
+		for (String var : modifies) {
+			DeclRef decl = new DeclRef(var);
+			IntLiteral zero = new IntLiteral(0);
+			IntLiteral one = new IntLiteral(1);
+			IntLiteral two = new IntLiteral(2);
+			BinaryExpr mod = new BinaryExpr(BinaryExpr.MOD, decl, two);
+			Invariant even = new Invariant(true, new BinaryExpr(BinaryExpr.EQUAL, mod, zero));
+			Invariant odd = new Invariant(true, new BinaryExpr(BinaryExpr.EQUAL, mod, one));
+			whileStmt.addToInvariantList(even);
+			whileStmt.addToInvariantList(odd);
+		}
+
 		return whileStmt;
 	}
 
@@ -131,4 +140,16 @@ public class InvariantGenVisitor extends DefaultVisitor {
 			}
 		}
 	}
-}
+
+	private ArrayList<Integer> getComparingOperators() {
+		ArrayList<Integer> properties = new ArrayList<Integer>();
+		properties.add(BinaryExpr.GEQ);
+		properties.add(BinaryExpr.NEQUAL);
+		properties.add(BinaryExpr.GT);
+		properties.add(BinaryExpr.EQUAL);
+		properties.add(BinaryExpr.LEQ);
+		properties.add(BinaryExpr.LT);
+		return properties;
+	}
+
+ }
