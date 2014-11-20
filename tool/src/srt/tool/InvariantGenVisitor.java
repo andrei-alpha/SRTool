@@ -1,10 +1,10 @@
-package srt.ast.visitor.impl;
+package srt.tool;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
 import srt.ast.*;
-import srt.tool.CollectConstraintsVisitor;
+import srt.ast.visitor.impl.DefaultVisitor;
 
 public class InvariantGenVisitor extends DefaultVisitor {
 

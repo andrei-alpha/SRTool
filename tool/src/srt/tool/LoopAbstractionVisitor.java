@@ -8,6 +8,7 @@ import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BlockStmt;
 import srt.ast.DeclRef;
+import srt.ast.EmptyStmt;
 import srt.ast.Expr;
 import srt.ast.HavocStmt;
 import srt.ast.IfStmt;
@@ -27,30 +28,42 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-		ArrayList<Stmt> stmts = new ArrayList<Stmt>(); 
+		ArrayList<Stmt> stmts = new ArrayList<Stmt>();
+		ArrayList<Stmt> body = new ArrayList<Stmt>(); 
 		
 		// Havoc all variables from loop modifies set
 		HashMap<String, Boolean> vars = new HashMap<String, Boolean>();
 		getModifiesSet(vars, whileStmt);
 		for (String varName : vars.keySet()) {
-			stmts.add(new HavocStmt(new DeclRef(varName)));
+			body.add(new HavocStmt(new DeclRef(varName)));
 		}
-		
-		Expr notCondition = new UnaryExpr(UnaryExpr.LNOT, whileStmt.getCondition());
-		stmts.add(new AssumeStmt(notCondition));
 		
 		// Add all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
-			System.out.println("Final Invariant: " + inv.getExpr());
+			if (!inv.isCandidate())
+				body.add(new AssumeStmt(inv.getExpr()));
+		}
+		
+		// Add all loop assertions TODO: from begining or end, else fail
+		CollectConstraintsVisitor collectConstraintsVisitor = new CollectConstraintsVisitor();
+		collectConstraintsVisitor.visit(whileStmt.getBody());
+		for (AssertStmt assertStmt : collectConstraintsVisitor.propertyNodes)
+			body.add(assertStmt);
+		
+		// This is the new body of the loop
+		IfStmt ifStmt = new IfStmt(whileStmt.getCondition(), new StmtList(body), new EmptyStmt());
+		stmts.add(ifStmt);
+		
+		// Add all loop invariants
+		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
+			System.out.println("Good Invariant: " + inv.getExpr());
 			if (!inv.isCandidate())
 				stmts.add(new AssumeStmt(inv.getExpr()));
 		}
 		
-		// Add all loop assertions
-		CollectConstraintsVisitor collectConstraintsVisitor = new CollectConstraintsVisitor();
-		collectConstraintsVisitor.visit(whileStmt.getBody());
-		for (AssertStmt assertStmt : collectConstraintsVisitor.propertyNodes)
-			stmts.add(assertStmt);
+		// Add negated condition
+		Expr notCondition = new UnaryExpr(UnaryExpr.LNOT, whileStmt.getCondition());
+		stmts.add(new AssumeStmt(notCondition));
 		
 		return super.visit(new BlockStmt(stmts, whileStmt.getNodeInfo()));
 	}

@@ -6,8 +6,6 @@ import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
 import srt.ast.Expr;
 import srt.ast.IntLiteral;
-import srt.ast.Stmt;
-import srt.ast.StmtList;
 
 public class SMTLIBQueryBuilder {
 

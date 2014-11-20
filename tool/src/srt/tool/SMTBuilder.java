@@ -3,7 +3,6 @@ package srt.tool;
 import java.io.IOException;
 
 import srt.ast.Program;
-import srt.ast.visitor.impl.InvariantGenVisitor;
 import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
 import srt.tool.SRTool.SRToolResult;

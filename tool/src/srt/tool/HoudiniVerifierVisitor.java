@@ -9,7 +9,6 @@ import srt.ast.Invariant;
 import srt.ast.Program;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
-import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.ProcessExec;
 import srt.tool.exception.ProcessTimeoutException;
 
@@ -40,14 +39,17 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 				break;
 			}
 			
-			if (failedInvs == null || failedInvs.isEmpty()) {
+			// Remove failing invariants
+			boolean success = false;
+			if (failedInvs != null) {
+				for (Expr failedInv : failedInvs)
+					success |= removeFailingInvariants(blockStmt.getBaseWhileStmt(), failedInv);
+			}
+				
+			if (!success) {
 				makeCandidatesTrue(blockStmt.getBaseWhileStmt());
 				break;
 			}
-			
-			// Remove failing assertions
-			for (Expr failedInv : failedInvs)
-				removeFailingAssertions(blockStmt.getBaseWhileStmt(), failedInv);
 			
 			blockStmt = HoudiniTransformerVisitor.transformWhileStmt(blockStmt.getBaseWhileStmt());
 			// Update the blockStmt in the Program
@@ -98,21 +100,20 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		return null;
 	}
 	
-	private void removeFailingAssertions(WhileStmt whileStmt, Expr failedExpr) {
+	private boolean removeFailingInvariants(WhileStmt whileStmt, Expr failedExpr) {
 		ArrayList<Invariant> invs = (ArrayList<Invariant>) (whileStmt.getInvariantList().getInvariants());
 		if (clArgs.verbose) {
 			System.out.println("Failed invariant: " + failedExpr);
 		}
 		
-		int removeCount = 0;
 		for (int i = 0; i < invs.size(); ++i) {
-			Invariant inv = invs.get(i);
-			
+			Invariant inv = invs.get(i);			
 			if (inv.getExpr().equals(failedExpr)) {
-				whileStmt.removeInvariantAt(i - removeCount);
-				removeCount += 1;
+				whileStmt.removeInvariantAt(i);
+				return true;
 			}
 		}
+		return false;
 	}
 	
 	private void makeCandidatesTrue(WhileStmt whileStmt) {
