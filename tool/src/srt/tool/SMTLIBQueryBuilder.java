@@ -33,7 +33,7 @@ public class SMTLIBQueryBuilder {
 		
 		query.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
 		query.append("(define-fun tobool ((p (_ BitVec 32))) Bool (not (= p (_ bv0 32))))\n");
-		// TODO: Define more functions above (for convenience), as needed.
+		// Defined more functions above (for convenience), as needed.
 		
 		for (String varName : constraints.variableNames) {
 			query.append("(declare-fun " + varName + " () (_ BitVec 32))\n");
@@ -47,11 +47,10 @@ public class SMTLIBQueryBuilder {
 		}
 		for (int i = 0; i < constraints.propertyNodes.size(); ++i) {
 			AssertStmt stmt = constraints.propertyNodes.get(i);
+			if (stmt.isHoudini())
+				houdiniConditions.add(i);
 			if (stmt.isUnwinding())
 				unwindingConditions.add(propName(i));
-			if (stmt.isHoudini()) {
-				houdiniConditions.add(i);
-			}
 			
  			String assertionQuery = "(not (tobool " + exprConverter.visit(stmt.getCondition()) + "))";
 			query.append("(assert (= " + propName(i) + " " + assertionQuery + "))\n");

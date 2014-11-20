@@ -1,9 +1,11 @@
 package srt.ast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockStmt extends Stmt {
 	private WhileStmt baseWhileStmt;
+	private ArrayList<AssertStmt> houdiniAsserts;
 	
 	public BlockStmt(StmtList stmtList) {
 		this(stmtList, null);
@@ -13,6 +15,7 @@ public class BlockStmt extends Stmt {
 		super(nodeInfo);
 		children.add(stmtList);
 		baseWhileStmt = null;
+		houdiniAsserts = new ArrayList<AssertStmt>();
 	}
 	
 	public BlockStmt(Stmt[] statements) {
@@ -22,6 +25,8 @@ public class BlockStmt extends Stmt {
 	public BlockStmt(Stmt[] statements, NodeInfo nodeInfo) {
 		super(nodeInfo);
 		children.add(new StmtList(statements, nodeInfo));
+		baseWhileStmt = null;
+		houdiniAsserts = new ArrayList<AssertStmt>();
 	}
 	
 	public BlockStmt(List<Stmt> statements) {
@@ -31,6 +36,8 @@ public class BlockStmt extends Stmt {
 	public BlockStmt(List<Stmt> statements, NodeInfo nodeInfo) {
 		super(nodeInfo);
 		children.add(new StmtList(statements, nodeInfo));
+		baseWhileStmt = null;
+		houdiniAsserts = new ArrayList<AssertStmt>();
 	}
 	
 	public StmtList getStmtList() {
@@ -43,5 +50,13 @@ public class BlockStmt extends Stmt {
 	
 	public WhileStmt getBaseWhileStmt() {
 		return baseWhileStmt;
+	}
+	
+	public void addHoudiniAssert(AssertStmt assertStmt) {
+		houdiniAsserts.add(assertStmt);
+	}
+	
+	public ArrayList<AssertStmt> getHoudiniAsserts() {
+		return houdiniAsserts;
 	}
 }

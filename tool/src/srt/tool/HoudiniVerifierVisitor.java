@@ -3,6 +3,7 @@ package srt.tool;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import srt.ast.AssertStmt;
 import srt.ast.BlockStmt;
 import srt.ast.Expr;
 import srt.ast.Invariant;
@@ -25,11 +26,13 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 	@Override
 	public Object visit(BlockStmt blockStmt) {
 		// This is not a Houdini block
-		
 		if (blockStmt.getBaseWhileStmt() == null)
 			return super.visit(blockStmt);
-			
+		
 		while(true) {
+			// Target all loops assertions as houdini
+			markAssertionsHoudini(blockStmt);
+			
 			ArrayList<Expr> failedInvs;
 			try {
 				failedInvs = checkProgram(program);
@@ -42,8 +45,9 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 			// Remove failing invariants
 			boolean success = false;
 			if (failedInvs != null) {
-				for (Expr failedInv : failedInvs)
+				for (Expr failedInv : failedInvs) {
 					success |= removeFailingInvariants(blockStmt.getBaseWhileStmt(), failedInv);
+				}
 			}
 				
 			if (!success) {
@@ -51,8 +55,8 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 				break;
 			}
 			
-			blockStmt = HoudiniTransformerVisitor.transformWhileStmt(blockStmt.getBaseWhileStmt());
 			// Update the blockStmt in the Program
+			blockStmt = HoudiniTransformerVisitor.transformWhileStmt(blockStmt.getBaseWhileStmt());
 			changeChildInParent(blockStmt);
 		}
 		
@@ -60,25 +64,26 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 	}
 	
 	public ArrayList<Expr> checkProgram(Program baseProgram) throws IOException, InterruptedException {
-		/*if (clArgs.verbose) {
-			PrinterVisitor printerVisitor = new PrinterVisitor();
+		if (clArgs.verbose) {
+			/*PrinterVisitor printerVisitor = new PrinterVisitor();
 			String code = printerVisitor.visit(baseProgram);
-			System.out.println("Before transformation:\n" + code);
-		}*/
+			System.out.println("Before transformation:\n" + code);*/
+		}
 		
 		Program program = baseProgram.copy();
 		program = (Program) new LoopAbstractionVisitor().visit(program);
 		program = (Program) new PredicationVisitor().visit(program);
 		program = (Program) new SSAVisitor().visit(program);
 
-		/*if (clArgs.verbose) {
-			PrinterVisitor printerVisitor = new PrinterVisitor();
+		if (clArgs.verbose) {
+			/*PrinterVisitor printerVisitor = new PrinterVisitor();
 			String code = printerVisitor.visit(program);
-			System.out.println("After transformation:\n" + code);
-		}*/
+			System.out.println("After transformation:\n" + code);*/
+		}
 		
 		// Collect the constraint expressions and variable names.
 		CollectConstraintsVisitor ccv = new CollectConstraintsVisitor();
+		ccv.makeHoudini();
 		ccv.visit(program);
 
 		SMTLIBQueryBuilder builder = new SMTLIBQueryBuilder(ccv);
@@ -120,6 +125,13 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		ArrayList<Invariant> invs = (ArrayList<Invariant>) (whileStmt.getInvariantList().getInvariants());
 		for (int i = 0; i < invs.size(); ++i) {
 			whileStmt.setCandidateAt(i, false);
+		}
+	}
+	
+	private void markAssertionsHoudini(BlockStmt blockStmt) {
+		ArrayList<AssertStmt> asserts = blockStmt.getHoudiniAsserts();
+		for (AssertStmt assertStmt : asserts) {
+			assertStmt.makeHoudini();
 		}
 	}
 }

@@ -33,7 +33,6 @@ public class HoudiniTransformerVisitor extends DefaultVisitor {
 		// Assert all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
 			AssertStmt assertStmt = new AssertStmt(inv.getExpr());
-			assertStmt.makeHoudini();
 			assertStmt.setHoudiniInvariant(inv.getExpr());
 			stmts.add(assertStmt);
 		}
@@ -50,15 +49,22 @@ public class HoudiniTransformerVisitor extends DefaultVisitor {
 		body.add(whileStmt.getBody());
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
 			AssertStmt assertStmt = new AssertStmt(inv.getExpr());
-			assertStmt.makeHoudini();
 			assertStmt.setHoudiniInvariant(inv.getExpr());
 			body.add(assertStmt);
 		}
 		body.add(new AssumeStmt(new IntLiteral(0)));
 		stmts.add(new IfStmt(whileStmt.getCondition(), new BlockStmt(body), new EmptyStmt()));
-		BlockStmt blockStmt = new BlockStmt(stmts);
-		blockStmt.setBaseWhileStmt(whileStmt);
+		BlockStmt houdiniBlockStmt = new BlockStmt(stmts);
+		houdiniBlockStmt.setBaseWhileStmt(whileStmt);
 		
-		return blockStmt;
+		// Make the houdini block keep track of its assertions
+		for (Stmt stmt : stmts)
+			if (stmt instanceof AssertStmt)
+				houdiniBlockStmt.addHoudiniAssert((AssertStmt) stmt);
+		for (Stmt stmt : body)
+			if (stmt instanceof AssertStmt)
+				houdiniBlockStmt.addHoudiniAssert((AssertStmt) stmt);
+		
+		return houdiniBlockStmt;
 	}
 }

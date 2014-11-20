@@ -42,6 +42,12 @@ public class InvariantGenVisitor extends DefaultVisitor {
 		if (!values.contains(0)) {
 			values.add(0);
 		}
+		if (!values.contains(1)) {
+			values.add(1);
+		}
+		if (!values.contains(-1)) {
+			values.add(-1);
+		}
 		
 		// Add candidate invariant for every two pairs of variables
 		ArrayList<Integer> properties = getComparingOperators();

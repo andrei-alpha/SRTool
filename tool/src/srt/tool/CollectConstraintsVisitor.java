@@ -15,10 +15,15 @@ public class CollectConstraintsVisitor extends DefaultVisitor {
 	public Set<String> variableNames = new HashSet<String>();
 	public List<AssignStmt> transitionNodes = new ArrayList<AssignStmt>();
 	public List<AssertStmt> propertyNodes = new ArrayList<AssertStmt>();
-	
+	private boolean houdiniMode;
 	
 	public CollectConstraintsVisitor() {
 		super(false);
+		houdiniMode = false;
+	}
+	
+	public void makeHoudini() {
+		houdiniMode = true;
 	}
 	
 	@Override
@@ -29,7 +34,8 @@ public class CollectConstraintsVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssertStmt assertStmt) {
-		propertyNodes.add(assertStmt);
+		if (!houdiniMode || assertStmt.isHoudini())
+			propertyNodes.add(assertStmt);
 		return super.visit(assertStmt);
 	}
 
