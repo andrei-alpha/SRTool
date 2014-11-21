@@ -41,6 +41,20 @@ public class SRToolImpl implements SRTool {
 			System.out.println(programText);
 		}
 		
+		// Run the normal BMC transformations to use SMT-Solver
+		SMTBuilder smtBuilder = new SMTBuilder(program, clArgs, CLArgs.BMC);
+		Thread smtThread = new Thread(smtBuilder);
+		smtThread.run();
+		solvers.add(smtThread);
+		builders.add(smtBuilder);
+		
+		// Run in INVGEN mode and use SMT-Solver
+		SMTBuilder smtBuilder2 = new SMTBuilder(program, clArgs, CLArgs.INVGEN);
+		Thread smtThread2 = new Thread(smtBuilder);
+		smtThread2.run();
+		solvers.add(smtThread2);
+		builders.add(smtBuilder2);
+		
 		// Run program to try to find input that fails assertions
 		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
 		Thread execThread = new Thread(execBuilder);
@@ -52,13 +66,14 @@ public class SRToolImpl implements SRTool {
 	public SRToolResult go() throws InterruptedException {
 		if (clArgs.mode.equals(CLArgs.COMP)) {
 			competition();
+		} else {
+			// Run the normal transformations to use SMT-Solver
+			SMTBuilder smtBuilder = new SMTBuilder(program, clArgs, clArgs.mode);
+			Thread smtThread = new Thread(smtBuilder);
+			smtThread.run();
+			solvers.add(smtThread);
+			builders.add(smtBuilder);
 		}
-		// Run the normal BMC transformations to use SMT-Solver
-		SMTBuilder smtBuilder = new SMTBuilder(program, clArgs);
-		Thread smtThread = new Thread(smtBuilder);
-		smtThread.run();
-		solvers.add(smtThread);
-		builders.add(smtBuilder);
 		
 		for (Thread solver : solvers)
 			solver.join();

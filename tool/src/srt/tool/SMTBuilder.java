@@ -10,9 +10,11 @@ import srt.tool.exception.ProcessTimeoutException;
 
 public class SMTBuilder extends Builder {
 	private SMTLIBQueryBuilder smtlibQueryBuilder;
+	private String mode;
 	
-	public SMTBuilder(Program program, CLArgs clArgs) {
+	public SMTBuilder(Program program, CLArgs clArgs, String mode) {
 		super(program, clArgs);
+		this.mode = mode;
 	}
 
 	@Override
@@ -29,13 +31,13 @@ public class SMTBuilder extends Builder {
 
 	public String transformProgram() {
 		// Transform program using visitors here
-		if (clArgs.mode.equals(CLArgs.BMC) || clArgs.mode.equals(CLArgs.COMP)) {
+		if (mode.equals(CLArgs.BMC) || mode.equals(CLArgs.COMP)) {
 			program = (Program) new LoopUnwinderVisitor(clArgs.unsoundBmc,
 					clArgs.unwindDepth).visit(program);
 		} else {
-			if (clArgs.mode.equals(CLArgs.INVGEN))
+			if (mode.equals(CLArgs.INVGEN))
 				program = (Program) new InvariantGenVisitor().visit(program);
-			if (clArgs.mode.equals(CLArgs.INVGEN) || clArgs.mode.equals(CLArgs.HOUDINI)) {
+			if (mode.equals(CLArgs.INVGEN) || mode.equals(CLArgs.HOUDINI)) {
 				program = (Program) new HoudiniTransformerVisitor(program).visit(program);
 				program = (Program) new HoudiniVerifierVisitor(program, clArgs).visit(program);
 			}
@@ -88,6 +90,8 @@ public class SMTBuilder extends Builder {
 		}
 		
 		if (queryResult.startsWith("sat")) {
+			if (mode.equals(CLArgs.INVGEN))
+				return SRToolResult.UNKNOWN;
 			if (clArgs.mode.equals(CLArgs.BMC) && smtlibQueryBuilder.isUnwindingFailure(queryResult))
 				return SRToolResult.INCORRECT;
 			else if (!smtlibQueryBuilder.isUnwindingFailure(queryResult))
