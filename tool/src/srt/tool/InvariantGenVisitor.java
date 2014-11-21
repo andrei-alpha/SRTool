@@ -9,13 +9,13 @@ import srt.ast.visitor.impl.DefaultVisitor;
 public class InvariantGenVisitor extends DefaultVisitor {
 
 	private HashSet<String> assertUses;
-	private ArrayList<Integer> values;
+	private HashSet<Integer> values;
 	CollectConstraintsVisitor collectConstraintsVisitor;
 
 	public InvariantGenVisitor() {
 		super(true);
 		assertUses = new HashSet<String>();
-		values = new ArrayList<Integer>();
+		values = new HashSet<Integer>();
 		collectConstraintsVisitor = new CollectConstraintsVisitor();
 	}
 
@@ -34,20 +34,14 @@ public class InvariantGenVisitor extends DefaultVisitor {
 		// Add all loop assertion constants to values
 		for (AssertStmt assertStmt : collectConstraintsVisitor.propertyNodes) {
 			Expr conditionExpr = assertStmt.getCondition();
-			extractAssertionLiterals(assertUses, values, conditionExpr);
+			extractAssertionLiterals(conditionExpr);
 		}
-		extractAssertionLiterals(assertUses, values, whileStmt.getCondition());
+		extractAssertionLiterals(whileStmt.getCondition());
 
-		// Add candidate invariants in respect to certain values
-		if (!values.contains(0)) {
-			values.add(0);
-		}
-		if (!values.contains(1)) {
-			values.add(1);
-		}
-		if (!values.contains(-1)) {
-			values.add(-1);
-		}
+		// Add common boundary constants to values set
+		values.add(0);
+		values.add(1);
+		values.add(-1);
 		
 		// Add candidate invariant for every two pairs of variables
 		ArrayList<Integer> properties = getComparingOperators();
@@ -78,9 +72,10 @@ public class InvariantGenVisitor extends DefaultVisitor {
 		}
 
 		// Add candidate invariants in respect to variables in assertions
+		ArrayList<Integer> oneWayProperties = getOneWayComparingOperators();
 		for (String var1 : assertUses) {
 			for (String var2 : assertUses) {
-				for (int operator : properties) {
+				for (int operator : oneWayProperties) {
 					if (var1.equals(var2))
 						continue;
 					DeclRef decl1 = new DeclRef(var1);
@@ -107,14 +102,12 @@ public class InvariantGenVisitor extends DefaultVisitor {
 		return whileStmt;
 	}
 
-	private void extractAssertionLiterals(HashSet<String> assertUses,
-										  ArrayList<Integer> values, Expr e) {
+	private void extractAssertionLiterals(Expr e) {
 		if (e instanceof UnaryExpr) {
 			UnaryExpr uExpr = (UnaryExpr) e;
-			extractAssertionLiterals(assertUses, values, uExpr.getOperand());
+			extractAssertionLiterals(uExpr.getOperand());
 		} else if (e instanceof BinaryExpr) {
 			BinaryExpr biExpr = (BinaryExpr) e;
-
 			if (isSimpleBinaryExpr(biExpr)) {
 				// Add all DeclRefs in the simple binary expressions
 				assertUses.addAll(biExpr.getUses());
@@ -123,8 +116,8 @@ public class InvariantGenVisitor extends DefaultVisitor {
 				addIntLiteralToValues(values, biExpr.getLhs());
 				addIntLiteralToValues(values, biExpr.getRhs());
 			} else {
-				extractAssertionLiterals(assertUses, values, biExpr.getLhs());
-				extractAssertionLiterals(assertUses, values, biExpr.getRhs());
+				extractAssertionLiterals(biExpr.getLhs());
+				extractAssertionLiterals(biExpr.getRhs());
 			}
 		}
 	}
@@ -138,21 +131,24 @@ public class InvariantGenVisitor extends DefaultVisitor {
 		return (e instanceof IntLiteral || e instanceof DeclRef);
 	}
 
-	private void addIntLiteralToValues(ArrayList<Integer> values, Expr e) {
+	private void addIntLiteralToValues(HashSet<Integer> values, Expr e) {
 		if (e instanceof IntLiteral) {
 			int value = ((IntLiteral) e).getValue();
-			if (!values.contains(value)) {
-				values.add(value);
-			}
+			values.add(value);
 		}
 	}
 
-	private ArrayList<Integer> getComparingOperators() {
+	private ArrayList<Integer> getOneWayComparingOperators() {
 		ArrayList<Integer> properties = new ArrayList<Integer>();
 		properties.add(BinaryExpr.GEQ);
 		properties.add(BinaryExpr.NEQUAL);
 		properties.add(BinaryExpr.GT);
 		properties.add(BinaryExpr.EQUAL);
+		return properties;
+	}
+
+	private ArrayList<Integer> getComparingOperators() {
+		ArrayList<Integer> properties = getOneWayComparingOperators();
 		properties.add(BinaryExpr.LEQ);
 		properties.add(BinaryExpr.LT);
 		return properties;

@@ -42,15 +42,15 @@ public class SRToolImpl implements SRTool {
 		}
 		
 		// Run the normal BMC transformations to use SMT-Solver
-		SMTBuilder smtBuilder = new SMTBuilder(program, clArgs, CLArgs.BMC);
+		SMTBuilder smtBuilder = new SMTBuilder(program.copy(), clArgs, CLArgs.BMC);
 		Thread smtThread = new Thread(smtBuilder);
 		smtThread.run();
 		solvers.add(smtThread);
 		builders.add(smtBuilder);
 		
 		// Run in INVGEN mode and use SMT-Solver
-		SMTBuilder smtBuilder2 = new SMTBuilder(program, clArgs, CLArgs.INVGEN);
-		Thread smtThread2 = new Thread(smtBuilder);
+		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
+		Thread smtThread2 = new Thread(smtBuilder2);
 		smtThread2.run();
 		solvers.add(smtThread2);
 		builders.add(smtBuilder2);
