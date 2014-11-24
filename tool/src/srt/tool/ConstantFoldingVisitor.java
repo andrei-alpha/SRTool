@@ -95,6 +95,28 @@ public class ConstantFoldingVisitor extends DefaultVisitor {
 			if (rhs instanceof IntLiteral && ((IntLiteral) rhs).getValue() == -1)
 				return new UnaryExpr(UnaryExpr.UMINUS, lhs);;
 		}
+		// Eliminate simple and cases
+		if (operator == BinaryExpr.LAND) {
+			if (lhs instanceof IntLiteral && ((IntLiteral) lhs).getValue() == 0)
+				return new IntLiteral(0);
+			if (lhs instanceof IntLiteral && ((IntLiteral) lhs).getValue() == 1)
+				return new IntLiteral(1);
+			if (rhs instanceof IntLiteral && ((IntLiteral) rhs).getValue() == 0)
+				return new IntLiteral(0);
+			if (rhs instanceof IntLiteral && ((IntLiteral) rhs).getValue() == 1)
+				return new IntLiteral(1);
+		}
+		// Eliminate simple or cases
+		if (operator == BinaryExpr.LOR) {
+			if (lhs instanceof IntLiteral && ((IntLiteral) lhs).getValue() == 0)
+				return rhs;
+			if (lhs instanceof IntLiteral && ((IntLiteral) lhs).getValue() == 1)
+				return new IntLiteral(1);
+			if (rhs instanceof IntLiteral && ((IntLiteral) rhs).getValue() == 0)
+				return lhs;
+			if (rhs instanceof IntLiteral && ((IntLiteral) rhs).getValue() == 1)
+				return new IntLiteral(1);
+		}
 		
 		return binaryExpr;
 	}

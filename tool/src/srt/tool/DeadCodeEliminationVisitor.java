@@ -36,7 +36,11 @@ public class DeadCodeEliminationVisitor extends ReverseVisitor {
 			return null;
 			
 		state.addAll(assignStmt.getRhs().getUses());
-		return super.visit(assignStmt);
+		if (state.contains(assignStmt.getLhs().getName()))
+				state.remove(assignStmt.getLhs().getName());
+		
+		super.visit(assignStmt.getRhs());
+		return assignStmt;
 	}
 	
 	@Override

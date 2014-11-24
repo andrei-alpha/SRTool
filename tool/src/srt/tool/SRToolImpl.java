@@ -24,19 +24,23 @@ public class SRToolImpl implements SRTool {
 		
 		// Perform smart loops optimizations and constant folding
 		LoopOptimizerVisitor loopOptimizerVisitor = new LoopOptimizerVisitor();
+		ConstantFoldingVisitor constantFoldingVisitor = new ConstantFoldingVisitor();
+		DeadCodeEliminationVisitor deadCodeEliminationVisitor = new DeadCodeEliminationVisitor();
 		while (true) { 
-			loopOptimizerVisitor.resetSuccess();
+			loopOptimizerVisitor.resetModified();
+			constantFoldingVisitor.resetModified();
+			deadCodeEliminationVisitor.resetModified();
 			program = (Program) loopOptimizerVisitor.visit(program);
-			program = (Program) new ConstantFoldingVisitor().visit(program);
-			program = (Program) new DeadCodeEliminationVisitor().visit(program);
+			program = (Program) constantFoldingVisitor.visit(program);
+			program = (Program) deadCodeEliminationVisitor.visit(program);
 			
-			if (!loopOptimizerVisitor.success)
+			if (!loopOptimizerVisitor.hasModified() && !deadCodeEliminationVisitor.hasModified())
 				break;
 		}
 
 		// Output the program as text after being optimized (for debugging).
 		if (clArgs.verbose) {
-			System.out.println("\nAfter optimization.\n");
+			System.out.println("\nAfter optimizations.\n");
 			String programText = new PrinterVisitor().visit(program);
 			System.out.println(programText);
 		}
@@ -49,7 +53,7 @@ public class SRToolImpl implements SRTool {
 		builders.add(smtBuilder);
 		
 		// Run in INVGEN mode and use SMT-Solver
-		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
+/*		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
 		Thread smtThread2 = new Thread(smtBuilder2);
 		smtThread2.run();
 		solvers.add(smtThread2);
@@ -60,7 +64,7 @@ public class SRToolImpl implements SRTool {
 		Thread execThread = new Thread(execBuilder);
 		execThread.run();
 		solvers.add(execThread);
-		builders.add(execBuilder);
+		builders.add(execBuilder);*/
 	}
 	
 	public SRToolResult go() throws InterruptedException {

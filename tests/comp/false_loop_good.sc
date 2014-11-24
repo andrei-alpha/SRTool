@@ -12,7 +12,7 @@ void main(int a, int b, int c, int n) {
   int bn;
   int cn;
   int i;
-/*
+
   i = 1;
   while (i <= n) {
     an = an * a;
@@ -25,10 +25,6 @@ void main(int a, int b, int c, int n) {
     assert(bn > 1);
     assert(cn > 1);
   }
-*/
-  an = a * a * a;
-  bn = b * b * b;
-  cn = c * c * c;
 
   // We shouldn't reach this loop
   while (an + bn == cn) {

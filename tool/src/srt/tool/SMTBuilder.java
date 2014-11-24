@@ -90,6 +90,8 @@ public class SMTBuilder extends Builder {
 		}
 		
 		if (queryResult.startsWith("sat")) {
+			if (clArgs.mode.equals(CLArgs.INVGEN))
+				return SRToolResult.INCORRECT;
 			if (mode.equals(CLArgs.INVGEN))
 				return SRToolResult.UNKNOWN;
 			if (clArgs.mode.equals(CLArgs.BMC) && smtlibQueryBuilder.isUnwindingFailure(queryResult))

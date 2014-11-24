@@ -28,14 +28,9 @@ public class LoopOptimizerVisitor extends DefaultVisitor {
 	private DeclRef iterationsCountRef;
 	private boolean expectX;
 	private int loopCountIndex = 0;
-	public boolean success;
 	
 	public LoopOptimizerVisitor() {
 		super(true);
-	}
-	
-	public void resetSuccess() {
-		success = false;
 	}
 	
 	@Override
@@ -63,7 +58,6 @@ public class LoopOptimizerVisitor extends DefaultVisitor {
 		}
 		
 		// Nice, we can simply this loop then, add the loop iterationsExpr
-		success = true;
 		AssignStmt iterations = new AssignStmt(iterationsCountRef, iterationsCountExpr);
 		stmts.add(0, iterations);
 		

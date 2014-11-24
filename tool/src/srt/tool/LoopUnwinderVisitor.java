@@ -50,8 +50,7 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		if (FunctionUtil.setIntersection(uses, modifies))
 			infiniteLoop = false;
 		
-		System.out.println("try to eliminate loop:" + whileStmt.hasAsserts());
-		
+		//System.out.println("try to eliminate loop:" + whileStmt.hasAsserts());
 		if (infiniteLoop && !whileStmt.hasAsserts()) {
 			AssumeStmt thenStmt = new AssumeStmt(new IntLiteral(0));
 			EmptyStmt elseStmt = new EmptyStmt();

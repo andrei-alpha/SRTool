@@ -45,10 +45,12 @@ public abstract class DefaultVisitor implements Visitor {
 	private boolean doesModify;
 	private int lastChildIndex;
 	private Node lastParent;
+	private boolean hasModified;
 	
 	public DefaultVisitor(boolean doesModify) {
 		super();
 		this.doesModify = doesModify;
+		hasModified = false;
 	}
 	
 	public Object visitChildren(Node node)
@@ -66,6 +68,7 @@ public abstract class DefaultVisitor implements Visitor {
 				if(doesModify && res != child) {
 					children.set(i, (Node) res);
 					modifiedChildren = true;
+					hasModified = true;
 				}
 			}
 		}
@@ -106,6 +109,14 @@ public abstract class DefaultVisitor implements Visitor {
 		if (lastChildIndex == -1)
 			return;
 		lastParent.changeChildAt(lastChildIndex, res);
+	}
+	
+	public boolean hasModified() {
+		return hasModified;
+	}
+	
+	public void resetModified() {
+		hasModified = false;
 	}
 	
 	@Override

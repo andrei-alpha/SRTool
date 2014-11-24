@@ -20,14 +20,10 @@ public class DeclRef extends Expr {
 		this.index = 0;
 	}
 
-	public int getIndex() {
-		return index;
-	}
-	
 	public String getName() {
-		if (getIndex() == 0)
+		if (index == 0)
 			return name;
-		return name + "$" + String.valueOf(getIndex());
+		return name + "$" + String.valueOf(index);
 	}
 	
 	public void setName(String newName) {
