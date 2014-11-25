@@ -73,6 +73,15 @@ public abstract class DefaultVisitor implements Visitor {
 			}
 		}
 		
+		// Remove any null children except WhileStmt
+		if (!(node instanceof WhileStmt)) {
+			for (int i = 0; i < children.size(); i++)
+				if (children.get(i) == null) {
+					children.remove(i);
+					--i;
+				}
+		}
+		
 		// Compute the modifies set for any node, declref and assign are special cases
 		node.resetVars();
 		if (node instanceof DeclRef) {

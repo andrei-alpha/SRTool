@@ -3,9 +3,9 @@
 // than two.
 
 void main(int a, int b, int c, int n) {
-  assume(a >= 1 && a <= 1000);
-  assume(b >= 1 && b <= 1000);
-  assume(c >= 1 && c <= 1000);
+  assume(a >= 2 && a <= 1000);
+  assume(b >= 2 && b <= 1000);
+  assume(c >= 2 && c <= 1000);
   assume(n == 3);
 
   int an;
@@ -13,6 +13,9 @@ void main(int a, int b, int c, int n) {
   int cn;
   int i;
 
+  an = 1;
+  bn = 1;
+  cn = 1;
   i = 1;
   while (i <= n) {
     an = an * a;

@@ -5,20 +5,23 @@ import java.util.HashSet;
 import srt.ast.AssignStmt;
 import srt.ast.Decl;
 import srt.ast.DeclRef;
+import srt.ast.IfStmt;
+import srt.ast.Stmt;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.ReverseVisitor;
+import srt.util.FunctionUtil;
 
 public class DeadCodeEliminationVisitor extends ReverseVisitor {
-	private HashSet<String> state;
+	private HashSet<String> live;
 	
 	public DeadCodeEliminationVisitor() {
 		super(true);
-		state = new HashSet<String>();
+		live = new HashSet<String>();
 	}
 
 	@Override
 	public Object visit(Decl decl) {
-		if (!state.contains(decl))
+		if (!live.contains(decl))
 			return null;
 		return super.visit(decl);
 	}
@@ -26,18 +29,18 @@ public class DeadCodeEliminationVisitor extends ReverseVisitor {
 	@Override
 	public Object visit(DeclRef declRef) {
 		declRef = (DeclRef) super.visit(declRef);
-		state.add(declRef.getName());
+		live.add(declRef.getName());
 		return super.visit(declRef);
 	}
 	
 	@Override
 	public Object visit(AssignStmt assignStmt) {
-		if (!state.contains(assignStmt.getLhs().getName()))
+		if (!live.contains(assignStmt.getLhs().getName()))
 			return null;
 			
-		state.addAll(assignStmt.getRhs().getUses());
-		if (state.contains(assignStmt.getLhs().getName()))
-				state.remove(assignStmt.getLhs().getName());
+		live.addAll(assignStmt.getRhs().getUses());
+		if (live.contains(assignStmt.getLhs().getName()))
+				live.remove(assignStmt.getLhs().getName());
 		
 		super.visit(assignStmt.getRhs());
 		return assignStmt;
@@ -45,8 +48,29 @@ public class DeadCodeEliminationVisitor extends ReverseVisitor {
 	
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-		state.addAll(whileStmt.getUses());
+		live.addAll(whileStmt.getUses());
 		return super.visit(whileStmt);
 	}
 
+	@Override
+	public Object visit(IfStmt ifStmt) {
+		HashSet<String> ifState, elseState;
+		ifState = new HashSet<String>();
+		elseState = new HashSet<String>();
+		ifState.addAll(live);
+		elseState.addAll(live);
+		
+		live = elseState;
+		Stmt elseStmt = (Stmt) super.visit(ifStmt.getElseStmt());
+		
+		live = ifState;
+		Stmt thenStmt = (Stmt) super.visit(ifStmt.getThenStmt());
+		
+		live = FunctionUtil.getUnion(ifState, elseState);	
+		live.addAll(ifStmt.getCondition().getUses());
+		// If we haven't modified the AST inside the ifStmt return the original ifStmt 
+		if (!hasModified())
+			return ifStmt;
+		return new IfStmt(ifStmt.getCondition(), thenStmt, elseStmt);
+	}
 }

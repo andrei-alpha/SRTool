@@ -3,7 +3,9 @@ package srt.tool;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import srt.ast.AssertStmt;
 import srt.ast.AssignStmt;
+import srt.ast.AssumeStmt;
 import srt.ast.BinaryExpr;
 import srt.ast.DeclRef;
 import srt.ast.Expr;
@@ -13,6 +15,7 @@ import srt.ast.Stmt;
 import srt.ast.UnaryExpr;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
+import srt.util.FunctionUtil;
 
 public class ConstantFoldingVisitor extends DefaultVisitor {
 	private WhileStmt lastLoop;
@@ -49,6 +52,24 @@ public class ConstantFoldingVisitor extends DefaultVisitor {
 		return assignStmt;
 	}
 	
+	@Override
+	public Object visit(AssumeStmt assumeStmt) {
+		assumeStmt = (AssumeStmt) super.visit(assumeStmt);
+		Expr cond = assumeStmt.getCondition();
+		if (cond instanceof IntLiteral && ((IntLiteral) cond).getValue() != 0)
+			return null;
+		return assumeStmt;
+	}
+	
+	@Override
+	public Object visit(AssertStmt assertStmt) {
+		assertStmt = (AssertStmt) super.visit(assertStmt);
+		Expr cond = assertStmt.getCondition();
+		if (cond instanceof IntLiteral && ((IntLiteral) cond).getValue() != 0)
+			return null;
+		return assertStmt;
+	}
+
 	@Override
 	public Object visit(BinaryExpr binaryExpr) {
 		binaryExpr = (BinaryExpr) super.visit(binaryExpr);
@@ -154,28 +175,22 @@ public class ConstantFoldingVisitor extends DefaultVisitor {
 	
 	@Override
 	public Object visit(IfStmt ifStmt) {
-		HashMap<String, Integer> prevState, ifState, elseState;
-		prevState = new HashMap<String, Integer>();
-		prevState.putAll(state);
+		HashMap<String, Integer> ifState, elseState;
+		ifState = new HashMap<String, Integer>();
+		elseState = new HashMap<String, Integer>();
 		
+		state = ifState;
 		Expr ifCond = (Expr) super.visit(ifStmt.getCondition());
 		Stmt thenStmt = (Stmt) super.visit(ifStmt.getThenStmt());
-		ifState = new HashMap<String, Integer>();
-		ifState.putAll(state);
-			
-		state = new HashMap<String, Integer>();
-		state.putAll(prevState);
+
+		state = elseState;
 		Stmt elseStmt = (Stmt) super.visit(ifStmt.getElseStmt());
 		elseState = state;
 		
-		prevState = new HashMap<String, Integer>();
-		for (String var : ifState.keySet()) {
-			if (elseState.containsKey(var) && elseState.get(var) == ifState.get(var)) {
-				prevState.put(var, ifState.get(var));
-			}
-		}
-		
-		state = prevState;
+		state = FunctionUtil.getIntersection(ifState, elseState);
+		// If we haven't modified the AST inside the ifStmt return the original ifStmt 
+		if (!hasModified())
+			return ifStmt;
 		return new IfStmt(ifCond, thenStmt, elseStmt);
 	}
 }

@@ -53,7 +53,7 @@ public class SRToolImpl implements SRTool {
 		builders.add(smtBuilder);
 		
 		// Run in INVGEN mode and use SMT-Solver
-/*		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
+		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
 		Thread smtThread2 = new Thread(smtBuilder2);
 		smtThread2.run();
 		solvers.add(smtThread2);
@@ -64,7 +64,7 @@ public class SRToolImpl implements SRTool {
 		Thread execThread = new Thread(execBuilder);
 		execThread.run();
 		solvers.add(execThread);
-		builders.add(execBuilder);*/
+		builders.add(execBuilder);
 	}
 	
 	public SRToolResult go() throws InterruptedException {
