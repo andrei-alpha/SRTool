@@ -25,6 +25,8 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(BlockStmt blockStmt) {
+		blockStmt = (BlockStmt) super.visit(blockStmt);
+		
 		// This is not a Houdini block
 		if (blockStmt.getBaseWhileStmt() == null)
 			return super.visit(blockStmt);

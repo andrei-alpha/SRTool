@@ -27,6 +27,8 @@ public class InvariantGenVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
+		whileStmt = (WhileStmt) super.visit(whileStmt);
+		
 		HashSet<String> modifies = whileStmt.getModifies();
 		HashSet<String> uses = whileStmt.getUses();
 

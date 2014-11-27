@@ -50,7 +50,7 @@ public class CLArgs implements Cloneable {
 	public Integer unwindDepth = 5;
 	
 	@Parameter(names = { "--timeout", "-timeout", "-t" }, description = "Timeout for SMT query in seconds.")
-	public Integer timeout = 58;
+	public Integer timeout = 50;
 	
 	@Parameter(names = { "--unsound", "-unsound",
 			"-us" }, description = "If this option is included and "

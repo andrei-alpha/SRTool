@@ -48,23 +48,23 @@ public class SRToolImpl implements SRTool {
 		// Run the normal BMC transformations to use SMT-Solver
 		SMTBuilder smtBuilder = new SMTBuilder(program.copy(), clArgs, CLArgs.BMC);
 		Thread smtThread = new Thread(smtBuilder);
-		smtThread.run();
+		smtThread.start();
 		solvers.add(smtThread);
 		builders.add(smtBuilder);
-		
-		// Run in INVGEN mode and use SMT-Solver
-		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
-		Thread smtThread2 = new Thread(smtBuilder2);
-		smtThread2.run();
-		solvers.add(smtThread2);
-		builders.add(smtBuilder2);
 		
 		// Run program to try to find input that fails assertions
 		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
 		Thread execThread = new Thread(execBuilder);
-		execThread.run();
+		execThread.start();
 		solvers.add(execThread);
 		builders.add(execBuilder);
+		
+		// Run in INVGEN mode and use SMT-Solver
+		SMTBuilder smtBuilder2 = new SMTBuilder(program.copy(), clArgs, CLArgs.INVGEN);
+		Thread smtThread2 = new Thread(smtBuilder2);
+		smtThread2.start();
+		solvers.add(smtThread2);
+		builders.add(smtBuilder2);
 	}
 	
 	public SRToolResult go() throws InterruptedException {
@@ -79,14 +79,22 @@ public class SRToolImpl implements SRTool {
 			builders.add(smtBuilder);
 		}
 		
-		for (Thread solver : solvers)
+		for (int i = 0; i < builders.size(); ++i) {
+			Builder builder = builders.get(i);
+			Thread solver = solvers.get(i);
 			solver.join();
-		for (Builder builder : builders) {
+			
 			SRToolResult runResult = builder.getResult();
-			if (runResult == SRToolResult.CORRECT)
+			if (runResult == SRToolResult.CORRECT) {
+				for (Thread thread : solvers) 
+					thread.interrupt();
 				return SRToolResult.CORRECT;
-			if (runResult == SRToolResult.INCORRECT)
+			}
+			if (runResult == SRToolResult.INCORRECT) {
+				for (Thread thread : solvers) 
+					thread.interrupt();
 				return SRToolResult.INCORRECT;
+			}
 		}
 		return SRToolResult.UNKNOWN;
 	}

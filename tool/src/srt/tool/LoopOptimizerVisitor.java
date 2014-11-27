@@ -8,6 +8,7 @@ import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BinaryExpr;
 import srt.ast.BlockStmt;
+import srt.ast.Decl;
 import srt.ast.DeclRef;
 import srt.ast.Expr;
 import srt.ast.IfStmt;
@@ -171,6 +172,8 @@ public class LoopOptimizerVisitor extends DefaultVisitor {
 			for (Node child : ((BlockStmt) node).getStmtList().getStatements())
 				result &= analyzeLoop(whileStmt, child, stmts);
 		}
+		if (node instanceof Decl)
+			return false;
 		
 		// The tricky case, enforce no assignment from vars in modifies
 		if (node instanceof AssignStmt) {
@@ -238,13 +241,15 @@ public class LoopOptimizerVisitor extends DefaultVisitor {
 				checkExpr = exprLhs;
 			}
 			
-			if (checkExpr != null) {
-				// If this contain x we can have only ADD or MINUS
+			if (exprLhs.getUses().contains(varName) || exprRhs.getUses().contains(varName)) {
+				// If x is contained in the expression subtree we can have only ADD or MINUS
 				if (operator != BinaryExpr.ADD && operator != BinaryExpr.SUBTRACT) {
 					//System.out.println("We were not expecting operator: " + BinaryExpr.getOperatorString(operator));
 					return false;
 				}
-				
+			}
+			
+			if (checkExpr != null) {
 				//System.out.println("found x in here! " + expectX);
 				if (expectX == false) {
 					//System.out.println("We were not expecting x!");

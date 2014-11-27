@@ -23,9 +23,7 @@ public class SMTBuilder extends Builder {
 			String smtQuery = transformProgram();
 			runResult = runQuery(smtQuery);
 		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 

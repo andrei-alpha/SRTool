@@ -1,6 +1,7 @@
 package srt.ast.visitor.impl;
 
 import java.util.List;
+import java.util.Stack;
 
 import srt.ast.*;
 import srt.ast.visitor.Visitor;
@@ -43,14 +44,16 @@ public abstract class DefaultVisitor implements Visitor {
 	
 	protected boolean stopVisitingChildren = false;
 	private boolean doesModify;
-	private int lastChildIndex;
-	private Node lastParent;
+	private Stack<Integer> lastChildIndex;
+	private Stack<Node> lastParent;
 	private boolean hasModified;
 	
 	public DefaultVisitor(boolean doesModify) {
 		super();
 		this.doesModify = doesModify;
 		hasModified = false;
+		lastChildIndex = new Stack<Integer>();
+		lastParent = new Stack<Node>();
 	}
 	
 	public Object visitChildren(Node node)
@@ -62,9 +65,11 @@ public abstract class DefaultVisitor implements Visitor {
 			Node child = children.get(i);
 			if(child != null)
 			{
-				lastParent = node;
-				lastChildIndex = i;
+				lastParent.push(node);
+				lastChildIndex.push(i);
 				Object res = visit(child);
+				lastParent.pop();
+				lastChildIndex.pop();
 				if(doesModify && res != child) {
 					children.set(i, (Node) res);
 					modifiedChildren = true;
@@ -115,9 +120,9 @@ public abstract class DefaultVisitor implements Visitor {
 	}
 	
 	public void changeChildInParent(Node res) {
-		if (lastChildIndex == -1)
+		if (lastChildIndex.isEmpty())
 			return;
-		lastParent.changeChildAt(lastChildIndex, res);
+		lastParent.peek().changeChildAt(lastChildIndex.peek(), res);
 	}
 	
 	public boolean hasModified() {

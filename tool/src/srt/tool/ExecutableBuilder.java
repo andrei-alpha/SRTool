@@ -24,9 +24,7 @@ public class ExecutableBuilder extends Builder {
 			String code = transformProgram();
 			runResult = runProgram(code);
 		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 	
@@ -96,7 +94,7 @@ public class ExecutableBuilder extends Builder {
 		String runResult = "";
 		process = new ProcessExec("./sr-test");
 		try {
-			runResult = process.execute("", 5 /*clArgs.timeout*/);
+			runResult = process.execute("", clArgs.timeout);
 		} catch(ProcessTimeoutException e) {
 			return SRToolResult.UNKNOWN;
 		}

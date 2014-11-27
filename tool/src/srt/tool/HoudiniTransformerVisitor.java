@@ -24,6 +24,7 @@ public class HoudiniTransformerVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
+		whileStmt = (WhileStmt) super.visit(whileStmt);
 		return super.visit(transformWhileStmt(whileStmt));
 	}
 	
