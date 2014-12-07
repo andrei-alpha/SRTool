@@ -25,6 +25,8 @@ public class PrinterVisitor extends DefaultVisitor {
 	
 	@Override
 	public String visit(AssertStmt assertStmt) {
+		if (!assertStmt.isVisible())
+			return "//invisilbe assert";
 		return "assert(" + visit(assertStmt.getCondition()) + ");";
 	}
 
@@ -35,6 +37,8 @@ public class PrinterVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssumeStmt assumeStmt) {
+		if (!assumeStmt.isVisible())
+			return "//invisilbe assume";
 		return "assume(" + visit(assumeStmt.getCondition()) + ");";
 	}
 

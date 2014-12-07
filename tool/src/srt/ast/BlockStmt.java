@@ -6,6 +6,7 @@ import java.util.List;
 public class BlockStmt extends Stmt {
 	private WhileStmt baseWhileStmt;
 	private ArrayList<AssertStmt> houdiniAsserts;
+	private ArrayList<AssumeStmt> houdiniAssumes;
 	
 	public BlockStmt(StmtList stmtList) {
 		this(stmtList, null);
@@ -16,6 +17,7 @@ public class BlockStmt extends Stmt {
 		children.add(stmtList);
 		baseWhileStmt = null;
 		houdiniAsserts = new ArrayList<AssertStmt>();
+		houdiniAssumes = new ArrayList<AssumeStmt>();
 	}
 	
 	public BlockStmt(Stmt[] statements) {
@@ -27,6 +29,7 @@ public class BlockStmt extends Stmt {
 		children.add(new StmtList(statements, nodeInfo));
 		baseWhileStmt = null;
 		houdiniAsserts = new ArrayList<AssertStmt>();
+		houdiniAssumes = new ArrayList<AssumeStmt>();
 	}
 	
 	public BlockStmt(List<Stmt> statements) {
@@ -38,6 +41,7 @@ public class BlockStmt extends Stmt {
 		children.add(new StmtList(statements, nodeInfo));
 		baseWhileStmt = null;
 		houdiniAsserts = new ArrayList<AssertStmt>();
+		houdiniAssumes = new ArrayList<AssumeStmt>();
 	}
 	
 	public StmtList getStmtList() {
@@ -58,5 +62,13 @@ public class BlockStmt extends Stmt {
 	
 	public ArrayList<AssertStmt> getHoudiniAsserts() {
 		return houdiniAsserts;
+	}
+
+	public void addHoudiniAssume(AssumeStmt stmt) {
+		houdiniAssumes.add(stmt);
+	}
+	
+	public ArrayList<AssumeStmt> getHoudiniAssumes() {
+		return houdiniAssumes;
 	}
 }

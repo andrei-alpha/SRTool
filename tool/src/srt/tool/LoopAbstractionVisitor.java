@@ -54,7 +54,7 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		// Add all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
 			if (clArgs.verbose) 
-				System.out.println("Good Invariant: " + inv.getExpr());
+				System.out.println("Loop @" + whileStmt.getNodeInfo().getLineNumber() + " Good Invariant: " + inv.getExpr());
 			if (!inv.isCandidate())
 				stmts.add(new AssumeStmt(inv.getExpr()));
 		}

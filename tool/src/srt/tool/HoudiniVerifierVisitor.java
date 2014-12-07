@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import srt.ast.AssertStmt;
+import srt.ast.AssumeStmt;
 import srt.ast.BlockStmt;
 import srt.ast.Expr;
 import srt.ast.Invariant;
@@ -34,6 +35,7 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		while(true) {
 			// Target all loops assertions as houdini
 			markAssertionsHoudini(blockStmt);
+			setHoudiniStmtsVisible(blockStmt);
 			
 			ArrayList<Expr> failedInvs;
 			try {
@@ -44,6 +46,8 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 				break;
 			}
 			
+			//System.out.println("#" + blockStmt.getBaseWhileStmt().getNodeInfo().getLineNumber() + " failed: " + failedInvs);
+			
 			// Remove failing invariants
 			boolean success = false;
 			if (failedInvs != null) {
@@ -51,7 +55,8 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 					success |= removeFailingInvariants(blockStmt.getBaseWhileStmt(), failedInv);
 				}
 			}
-				
+			
+			//System.out.println("result: " + success);
 			if (!success) {
 				makeCandidatesTrue(blockStmt.getBaseWhileStmt());
 				break;
@@ -69,7 +74,7 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		if (clArgs.verbose) {
 			/*PrinterVisitor printerVisitor = new PrinterVisitor();
 			String code = printerVisitor.visit(baseProgram);
-			System.out.println("Before transformation:\n" + code);*/
+			System.out.println("Houdini Before transformation:\n" + code);*/
 		}
 		
 		Program program = baseProgram.copy();
@@ -80,7 +85,7 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		if (clArgs.verbose) {
 			/*PrinterVisitor printerVisitor = new PrinterVisitor();
 			String code = printerVisitor.visit(program);
-			System.out.println("After transformation:\n" + code);*/
+			System.out.println("Houdini After transformation:\n" + code);*/
 		}
 		
 		// Collect the constraint expressions and variable names.
@@ -135,5 +140,12 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		for (AssertStmt assertStmt : asserts) {
 			assertStmt.makeHoudini();
 		}
+	}
+	
+	private void setHoudiniStmtsVisible(BlockStmt blockStmt) {
+		for (AssertStmt assertStmt : blockStmt.getHoudiniAsserts())
+			assertStmt.setVisible(true);
+		for (AssumeStmt assumeStmt : blockStmt.getHoudiniAssumes())
+			assumeStmt.setVisible(true);
 	}
 }

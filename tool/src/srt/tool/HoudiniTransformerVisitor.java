@@ -34,6 +34,7 @@ public class HoudiniTransformerVisitor extends DefaultVisitor {
 		// Assert all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
 			AssertStmt assertStmt = new AssertStmt(inv.getExpr());
+			assertStmt.setVisible(false);
 			assertStmt.setHoudiniInvariant(inv.getExpr());
 			stmts.add(assertStmt);
 		}
@@ -43,28 +44,39 @@ public class HoudiniTransformerVisitor extends DefaultVisitor {
 		}
 		// Assume all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
-			stmts.add(new AssumeStmt(inv.getExpr()));
+			AssumeStmt assumeStmt = new AssumeStmt(inv.getExpr());
+			assumeStmt.setVisible(false);
+			stmts.add(assumeStmt);
 		}
 		// Abstract loop body once
 		ArrayList<Stmt> body = new ArrayList<Stmt>();
 		body.add(whileStmt.getBody());
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
 			AssertStmt assertStmt = new AssertStmt(inv.getExpr());
+			assertStmt.setVisible(false);
 			assertStmt.setHoudiniInvariant(inv.getExpr());
 			body.add(assertStmt);
 		}
-		body.add(new AssumeStmt(new IntLiteral(0)));
+		AssumeStmt stopAssumeStmt = new AssumeStmt(new IntLiteral(0));
+		stopAssumeStmt.setVisible(false);
+		body.add(stopAssumeStmt);
 		stmts.add(new IfStmt(whileStmt.getCondition(), new BlockStmt(body), new EmptyStmt()));
 		BlockStmt houdiniBlockStmt = new BlockStmt(stmts);
 		houdiniBlockStmt.setBaseWhileStmt(whileStmt);
 		
 		// Make the houdini block keep track of its assertions
-		for (Stmt stmt : stmts)
+		for (Stmt stmt : stmts) {
 			if (stmt instanceof AssertStmt)
 				houdiniBlockStmt.addHoudiniAssert((AssertStmt) stmt);
-		for (Stmt stmt : body)
+			if (stmt instanceof AssumeStmt)
+				houdiniBlockStmt.addHoudiniAssume((AssumeStmt) stmt);
+		}
+		for (Stmt stmt : body) {
 			if (stmt instanceof AssertStmt)
 				houdiniBlockStmt.addHoudiniAssert((AssertStmt) stmt);
+			if (stmt instanceof AssumeStmt)
+				houdiniBlockStmt.addHoudiniAssume((AssumeStmt) stmt);
+		}
 		
 		return houdiniBlockStmt;
 	}

@@ -66,6 +66,9 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssertStmt assertStmt) {
+		if (assertStmt.isVisible() == false)
+			return null;
+			
 		Expr topPredicate = getTopPredicate();
 		if (topPredicate != null) {
 			Expr leftQ = new UnaryExpr(UnaryExpr.LNOT, topPredicate); 
@@ -107,6 +110,9 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssumeStmt assumeStmt) {
+		if (assumeStmt.isVisible() == false)
+			return null;
+		
 		AssignStmt assumeCond = newCondition(ASSUME, assumeStmt.getCondition());
 		return super.visit(assumeCond);
 	}
