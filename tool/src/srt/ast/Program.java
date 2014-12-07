@@ -28,10 +28,6 @@ public class Program extends Node {
   }
 	
   public Program copy() {
-	  try {
-		return (Program) super.clone();
-	} catch (CloneNotSupportedException e) {
-		throw new RuntimeException();
-	}
+	  return (Program) this.deepClone();
   }
 }

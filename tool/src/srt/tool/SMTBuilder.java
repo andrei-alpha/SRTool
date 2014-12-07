@@ -39,7 +39,7 @@ public class SMTBuilder extends Builder {
 				program = (Program) new HoudiniTransformerVisitor(program).visit(program);
 				program = (Program) new HoudiniVerifierVisitor(program, clArgs).visit(program);
 			}
-			program = (Program) new LoopAbstractionVisitor().visit(program);
+			program = (Program) new LoopAbstractionVisitor(clArgs).visit(program);
 		}
 		program = (Program) new PredicationVisitor().visit(program);
 		program = (Program) new SSAVisitor().visit(program);

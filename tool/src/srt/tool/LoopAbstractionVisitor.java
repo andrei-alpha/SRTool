@@ -18,9 +18,11 @@ import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
 
 public class LoopAbstractionVisitor extends DefaultVisitor {
-
-	public LoopAbstractionVisitor() {
+	CLArgs clArgs;
+	
+	public LoopAbstractionVisitor(CLArgs clArgs) {
 		super(true);
+		this.clArgs = clArgs;
 	}
 
 	@Override
@@ -51,7 +53,8 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		
 		// Add all loop invariants
 		for (Invariant inv : whileStmt.getInvariantList().getInvariants()) {
-			System.out.println("Good Invariant: " + inv.getExpr());
+			if (clArgs.verbose) 
+				System.out.println("Good Invariant: " + inv.getExpr());
 			if (!inv.isCandidate())
 				stmts.add(new AssumeStmt(inv.getExpr()));
 		}

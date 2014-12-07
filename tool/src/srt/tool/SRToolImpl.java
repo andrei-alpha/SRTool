@@ -44,7 +44,7 @@ public class SRToolImpl implements SRTool {
 			String programText = new PrinterVisitor().visit(program);
 			System.out.println(programText);
 		}
-		
+
 		// Run the normal BMC transformations to use SMT-Solver
 		SMTBuilder smtBuilder = new SMTBuilder(program.copy(), clArgs, CLArgs.BMC);
 		Thread smtThread = new Thread(smtBuilder);
@@ -53,7 +53,7 @@ public class SRToolImpl implements SRTool {
 		builders.add(smtBuilder);
 		
 		// Run program to try to find input that fails assertions
-		ExecutableBuilder execBuilder = new ExecutableBuilder(program, clArgs);
+		ExecutableBuilder execBuilder = new ExecutableBuilder(program.copy(), clArgs);
 		Thread execThread = new Thread(execBuilder);
 		execThread.start();
 		solvers.add(execThread);

@@ -62,7 +62,7 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 			changeChildInParent(blockStmt);
 		}
 		
-		return super.visit(blockStmt.getBaseWhileStmt());
+		return blockStmt.getBaseWhileStmt();
 	}
 	
 	public ArrayList<Expr> checkProgram(Program baseProgram) throws IOException, InterruptedException {
@@ -73,7 +73,7 @@ public class HoudiniVerifierVisitor extends DefaultVisitor {
 		}
 		
 		Program program = baseProgram.copy();
-		program = (Program) new LoopAbstractionVisitor().visit(program);
+		program = (Program) new LoopAbstractionVisitor(clArgs).visit(program);
 		program = (Program) new PredicationVisitor().visit(program);
 		program = (Program) new SSAVisitor().visit(program);
 

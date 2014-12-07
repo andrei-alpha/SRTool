@@ -77,6 +77,25 @@ public abstract class Node implements Cloneable {
 		}
 	}
 	
+	public Node deepClone() {
+		try {
+			Node newNode = (Node) super.clone();
+			newNode.nodeInfo = this.nodeInfo;
+			newNode.uses = new HashSet<String>();
+			newNode.modifies = new HashSet<String>();
+			newNode.children = new ArrayList<Node>();
+			for (int i = 0; i < this.children.size(); ++i) {
+				if (this.children.get(i) == null)
+					newNode.children.add(null);
+				else
+					newNode.children.add( this.children.get(i).deepClone() );
+			}
+			return newNode;
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public void changeChildAt(int index, Node child) {
 		children.set(index, child);
 	}
