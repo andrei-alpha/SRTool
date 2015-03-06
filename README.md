@@ -14,7 +14,7 @@ Before you can build the tool you need to create an enviroment variable *TOOL_DI
 1. [Z3 SMT Solver](http://z3.codeplex.com/)
 2. [CVC4 Theorem Prover](https://github.com/CVC4/CVC4)
 
-After that you can build the tool and run it using *srt_build* and *srt_tun* script from the *tool* directory. Additionaly you can use the scripts found in the root directory that will run the tool on a predefined set of tests like *Invariant Generation*, *Houdini* or *Competition*.
+After that you can build the tool and run it using *srt_build* and *srt_tun* script from the *tool* directory. Additionaly you can use the scripts found in the *scripts* directory that will run the tool on a predefined set of tests like *Invariant Generation*, *Houdini* or *Competition*.
 
 ### Future work
 
